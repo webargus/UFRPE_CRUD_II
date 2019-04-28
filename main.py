@@ -1,9 +1,13 @@
 
 from tkinter import *
+import sqltools
+
 from tkinter import ttk
 
 
 class Gui:
+
+    db_conn = sqltools.Sqlite()
 
     def __init__(self):
         self.root = Tk()
@@ -25,35 +29,36 @@ class Gui:
         self.login_dialog.config({"width": 300, "height": 200})
         self.login_dialog.after(500, lambda: self.login_dialog.focus_force())
 
-        # Tell the window manager, this is the child widget.
+        # Let the window manager know this is a child widget.
         # Interesting, if you want to let the child window
         # flash if user clicks onto parent
         self.login_dialog.transient(self.root)
 
-        # This is watching the window manager close button
-        # and uses the same callback function as the other buttons
-        # (you can use which ever you want, BUT REMEMBER TO ENABLE
-        # THE PARENT WINDOW AGAIN)
-        # self.login_dialog.protocol("WM_DELETE_WINDOW", self.close_login_dialog)
+        # Watch over if user clicks on the login window bar close button
+        # and close both, login and main window,
+        # for we realize user has no program access credentials and decides to leave it
         self.login_dialog.protocol("WM_DELETE_WINDOW", self.close_login_dialog)
 
         center_window(self.login_dialog)
         self.loginF = Frame(self.login_dialog, {"bg": "yellow"})
         self.loginF.place({"relx": .5, "rely": .5, "anchor": CENTER})
         Label(self.loginF, {"text": "Login:", "bg": "yellow"}).grid({"row": 0, "column": 0, "padx": 10, "pady": 10})
-        login = StringVar()
-        Entry(self.loginF, {"textvariable": login}).grid({"row": 0, "column": 1, "padx": 10, "pady": 10})
+        login = Entry(self.loginF)
+        login.grid({"row": 0, "column": 1, "padx": 10, "pady": 10})
         Label(self.loginF, {"text": "Senha:", "bg": "yellow"}).grid({"row": 1, "column": 0, "padx": 10, "pady": 10})
-        Entry(self.loginF).grid({"row": 1, "column": 1, "padx": 10, "pady": 10})
-        Button(self.loginF, {"text": "Logar", "width": 10, "command": self.process_login}).grid({"row": 2, "column": 0, "columnspan": 2, "pady": 10})
+        pwd = Entry(self.loginF, {"show": "*"})
+        pwd.grid({"row": 1, "column": 1, "padx": 10, "pady": 10})
+        Button(self.loginF, {"text": "Logar", "width": 10, "command": lambda: self.process_login(login.get(), pwd.get())}).grid({"row": 2, "column": 0, "columnspan": 2, "pady": 10})
         self.login_dialog.mainloop()
 
     def close_login_dialog(self):
-        # destroy both, login and main windows if user clicked on login quit button (quit program)
+        # destroy both, login and main windows if user clicked on login window exit button (quit program)
         self.login_dialog.destroy()
         self.root.destroy()
 
-    def process_login(self):
+    def process_login(self, username, password):
+        if self.db_conn.login(username, password) is None:
+            return
 
         self.root.wm_attributes("-disabled", False)     # IMPORTANT! enable main window
         self.login_dialog.destroy()
