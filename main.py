@@ -1,79 +1,47 @@
 
 from tkinter import *
 import sqltools
+import tools
+from tkinter.ttk import *
 
-from tkinter import ttk
 
-
-class Gui:
+class Gui(Frame):
 
     db_conn = sqltools.Sqlite()
 
     def __init__(self):
-        self.root = Tk()
-        self.root.wm_minsize(800, 600)
-        self.root.state('normal')
-        self.root.title("Projeto CRUD II - Controle Acadêmico Simplificado")
-        center_window(self.root)
+        Frame.__init__(self)
+        self.master.wm_minsize(800, 600)
+        self.master.state('normal')
+        self.master.title("Projeto CRUD II - Controle Acadêmico Simplificado")
+        tools.center_window(self.master)
+        self.pack({"expand": YES, "fill": BOTH, "side": LEFT})
+        n = Notebook(self)
+        f1 = Frame(n)  # first page, which would get widgets gridded into it
+        f2 = Frame(n)  # second page
+        n.add(f1, text='One')
+        n.add(f2, text='Two')
+        n.pack({"expand": YES, "fill": BOTH, "side": LEFT})
 
-        self.do_login()
-        self.root.mainloop()
+        colors = ['red', 'green', 'orange', 'white', 'yellow', 'blue']
+        r = 0
+        for c in colors:
+            Label(f1, text=c, width=25).grid(row=r, column=0)
+            Entry(f1).grid(row=r, column=1)
+            r = r + 1
 
-    def do_login(self):
+        tree = Treeview(f2, columns=('name'))
+        tree.bind('<<TreeviewSelect>>', lambda e: print(tree.item(tree.focus())))
+        tree.grid({"row": 0, "column": 0})
+        tree.heading('#0', text='CPF')
+        tree.heading('name', text='Nome')
+        img = PhotoImage(file='checkbox_1.png')
+        tree.insert('', 'end', text='278.700.814-34', image=img, values=('"Edson Kropniczki"'))
+        tree.insert('', 'end', text='button', tags=('ttk', 'simple'))
+        tree.tag_configure('ttk', background='yellow', image=img)
 
-        # Disable main window
-        self.root.wm_attributes("-disabled", True)
-
-        # Create the login dialog
-        self.login_dialog = Toplevel(self.root, {"bg": "yellow"})
-        self.login_dialog.config({"width": 300, "height": 200})
-        self.login_dialog.after(500, lambda: self.login_dialog.focus_force())
-
-        # Let the window manager know this is a child widget.
-        # Interesting, if you want to let the child window
-        # flash if user clicks onto parent
-        self.login_dialog.transient(self.root)
-
-        # Watch over if user clicks on the login window bar close button
-        # and close both, login and main window,
-        # for we realize user has no program access credentials and decides to leave it
-        self.login_dialog.protocol("WM_DELETE_WINDOW", self.close_login_dialog)
-
-        center_window(self.login_dialog)
-        self.loginF = Frame(self.login_dialog, {"bg": "yellow"})
-        self.loginF.place({"relx": .5, "rely": .5, "anchor": CENTER})
-        Label(self.loginF, {"text": "Login:", "bg": "yellow"}).grid({"row": 0, "column": 0, "padx": 10, "pady": 10})
-        login = Entry(self.loginF)
-        login.grid({"row": 0, "column": 1, "padx": 10, "pady": 10})
-        Label(self.loginF, {"text": "Senha:", "bg": "yellow"}).grid({"row": 1, "column": 0, "padx": 10, "pady": 10})
-        pwd = Entry(self.loginF, {"show": "*"})
-        pwd.grid({"row": 1, "column": 1, "padx": 10, "pady": 10})
-        Button(self.loginF, {"text": "Logar", "width": 10, "command": lambda: self.process_login(login.get(), pwd.get())}).grid({"row": 2, "column": 0, "columnspan": 2, "pady": 10})
-        self.login_dialog.mainloop()
-
-    def close_login_dialog(self):
-        # destroy both, login and main windows if user clicked on login window exit button (quit program)
-        self.login_dialog.destroy()
-        self.root.destroy()
-
-    def process_login(self, username, password):
-        if self.db_conn.login(username, password) is None:
-            return
-
-        self.root.wm_attributes("-disabled", False)     # IMPORTANT! enable main window
-        self.login_dialog.destroy()
-
-
-def center_window(win):
-    # call update_idletasks before retrieving any geometry,
-    # to ensure that the values returned are accurate
-    win.update_idletasks()
-    width = win.winfo_width()
-    height = win.winfo_height()
-    x = (win.winfo_screenwidth() // 2) - (width // 2)
-    y = (win.winfo_screenheight() // 2) - (height // 2)
-    win.geometry('{}x{}+{}+{}'.format(width, height, x, y))
-    # print("width=%d; height=%d; x=%d; y=%d" % (width, height, x, y))
+        #login.LoginDialog(self)
+        self.mainloop()
 
 
 if __name__ == '__main__':
