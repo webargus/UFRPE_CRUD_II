@@ -1,53 +1,30 @@
-import tkinter as TK
+from tkinter import *
 
-class MyApp(TK.Frame):
+class LabeledEntry(Frame):
+    def __init__(self, parent, *args, **kargs):
+        text = kargs.pop("text")
+        Frame.__init__(self, parent)
+        Label(self, text=text, justify=LEFT).grid(sticky = W, column=0,row=0)
+        Entry(self, *args, **kargs).grid(sticky = E, column=1, row=0)
 
-    def __init__(self, master):
-        super().__init__(master) # initialize the 'TK.Frame'
+class User_Input:
+    def __init__(self, parent):
+        fields = ['Text Label 1', 'This is the text Label 2']
+        GUIFrame =Frame(parent)
+        GUIFrame.pack(expand=True, anchor=NW)
+        parent.minsize(width=350, height=325)
+        field_index = 1
+        for field in fields:
+            self.field = LabeledEntry(GUIFrame, text=field)
+            self.field.grid(column=0, row=field_index)
+            self.field.grid_columnconfigure(index = 0, minsize = 150)
+            field_index += 1
+        self.Button2 = Button(parent, text='exit', command= parent.quit)
+        self.Button2.place(x=25, y=300)
 
-        # configure the root Frame (i.e. 'self')
-        self.master = master # just for reference later
-        self.master.grid_rowconfigure(0, weight = 1)
-        self.master.grid_columnconfigure(0, weight = 1)
-        self.grid(column = 0, row = 0, sticky = 'nsew')
-        self.grid_rowconfigure(0, weight = 1)
-        self.grid_columnconfigure(0, weight = 1) # columns will split space
-        self.grid_columnconfigure(1, weight = 1) # columns will split space
+if __name__ == '__main__':  # get in the habit of doing this
+    root = Tk()
 
-        # configure internal left Frame
-        self.left_frame = TK.Frame(self, borderwidth = 2, relief = TK.SUNKEN)
-        self.left_frame.grid_rowconfigure(0, weight = 1) # rows will split space
-        self.left_frame.grid_rowconfigure(1, weight = 1) # rows will split space
-        self.left_frame.grid_columnconfigure(0, weight = 1)
-        self.left_frame.grid(column = 0, row = 0, sticky = 'nsew')
-        self.left_box0 = TK.Listbox(self.left_frame, borderwidth = 0)
-        self.left_box0.grid(column = 0, row = 0, sticky = 'nsew')
-        self.left_box1 = TK.Listbox(self.left_frame, borderwidth = 0)
-        self.left_box1.grid(column = 0, row = 1, sticky = 'nsew')
-
-        # configure internal right Frame
-        self.right_frame = TK.Frame(self, borderwidth = 2, relief = TK.SUNKEN)
-        self.right_frame.grid_rowconfigure(0, weight = 1) # rows will split space
-        self.right_frame.grid_rowconfigure(1, weight = 1) # rows will split space
-        self.right_frame.grid_columnconfigure(0, weight = 1)
-        self.right_frame.grid(column = 1, row = 0, sticky = 'nsew')
-        self.right_box0 = TK.Listbox(self.right_frame, borderwidth = 0)
-        self.right_box0.grid(column = 0, row = 0, sticky = 'nsew')
-        self.right_box1 = TK.Listbox(self.right_frame, borderwidth = 0)
-        self.right_box1.grid(column = 0, row = 1, sticky = 'nsew')
-
-        for i in range(20):
-            self.left_box0.insert(TK.END, 'lb0')
-            self.left_box1.insert(TK.END, 'lb1')
-            self.right_box0.insert(TK.END, 'rb0')
-            self.right_box1.insert(TK.END, 'rb1')
-
-
-if __name__ == '__main__': # get in the habit of doing this
-    root = TK.Tk()
-    root.title('My App')
-    root.geometry('{}x{}'.format(768, 500))
-    root.resizable(width = False, height = False)
-    app = MyApp(root)
-    app.mainloop()
+    MainFrame =User_Input(root)
+    root.mainloop()
 

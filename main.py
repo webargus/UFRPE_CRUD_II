@@ -3,7 +3,8 @@ from tkinter import *
 from tkinter.ttk import *
 import sqltools
 import tools
-import treeviewtable as tv
+import disciplinas
+import professores
 import alunos
 #import login
 
@@ -23,23 +24,20 @@ class Gui(Frame):
         self.grid({"row": 0, "column": 0, "sticky": NSEW})
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
+
         n = Notebook(self)
-        f1 = Frame(n)
-        '''f1.grid_rowconfigure(0, weight=1)
-        f1.grid_columnconfigure(0, weight=1)
-        f1.grid({"row": 0, "column": 0, "sticky": NSEW})'''
-        f2 = Frame(n)  # second page
-        '''f2.grid_rowconfigure(0, weight=1)
-        f2.grid_columnconfigure(0, weight=1)
-        f2.grid({"row": 0, "column": 0, "sticky": NSEW})'''
+        f1 = Frame(n)   # frame p/ disciplinas
+        f2 = Frame(n)   # frame p/ professores
+        f3 = Frame(n)   # frame p/ alunos
+        #   acrescenta abas
         n.add(f1, text='Disciplinas')
-        n.add(f2, text='Alunos')
+        n.add(f2, text='Professores')
+        n.add(f3, text='Alunos')
         n.grid({"row": 0, "column": 0, "sticky": NSEW})
 
-        palunos = alunos.PainelAlunos(f1)
-
-        tree = tv.TreeViewTable(f2, ("CPF", 'Aluno', 'Turma'))
-        tree.appendItem(("278.700.814-34", "Edson Kropniczki", "TGA"))
+        pdiscip = disciplinas.PainelDisciplinas(f1)
+        pprofs = professores.PainelProfessores(f2)
+        palunos = alunos.PainelAlunos(f3)
 
         # login.LoginDialog(self)
         self.mainloop()
