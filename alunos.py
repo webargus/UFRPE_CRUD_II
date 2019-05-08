@@ -7,10 +7,12 @@ import treeviewtable as tv
 class PainelAlunos:
 
     def __init__(self, frame):
+
         frame.grid_rowconfigure(0, weight=0)    # 0 => row won't expand vertically if there's space for that
         frame.grid_rowconfigure(1, weight=1)
+
         # cria frame p/ formulário de novo aluno
-        fNovoAluno = Frame(frame, {"relief": SUNKEN, "pady": 8, "padx": 8})
+        fNovoAluno = LabelFrame(frame, {"pady": 8, "padx": 8, "text": " Novo Cadastro "})
         fNovoAluno.grid({"row": 0, "column": 0, "sticky": NSEW})
         fNovoAluno.grid_columnconfigure(1, weight=1)
         Label(fNovoAluno, {"text": "Nome:"}).grid({"row": 0, "column": 0})
