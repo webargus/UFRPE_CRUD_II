@@ -48,6 +48,8 @@ class Sqlite:
                     'semester' CHAR(6),
                     'subject' CHAR(5))
                 '''
+        self.cursor.execute(query)
+
         #   create subjects table
         query = '''CREATE TABLE 'subjects'
                     ('id' INTEGER PRIMARY KEY AUTOINCREMENT,

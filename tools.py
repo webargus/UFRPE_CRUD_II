@@ -1,3 +1,9 @@
+import re
+from tkinter import messagebox
+
+cpf_pattern = r"^\d{11}$"               # expressão regular para validar CPF
+disciplina_pattern = r"^\d{5}$"         # expressão regular para validar código de disciplina
+periodo_pattern = r"^\d{4}\.\d{1}$"     # expressão regular para validar período de turma
 
 
 def center_window(win):
@@ -11,6 +17,17 @@ def center_window(win):
     win.geometry('{}x{}+{}+{}'.format(width, height, x, y))
     # print("width=%d; height=%d; x=%d; y=%d" % (width, height, x, y))  # debug
 
+
+def validar_disciplina(codigo):
+    #   verifica se o código da disciplina consiste em string de 5 algarismos
+    if re.match(disciplina_pattern, codigo) is None:
+        return False
+    return True
+
+
+def aviso_erro(erros):
+    msg = "Favor verificar:\n"
+    messagebox.showwarning("...Êpa!!", (msg + "\n".join(erros)))
 
 
 

@@ -6,7 +6,7 @@ import tools
 import disciplinas
 import professores
 import alunos
-#import login
+import login
 
 
 class Gui(Frame):
@@ -39,7 +39,7 @@ class Gui(Frame):
         pprofs = professores.PainelProfessores(f2)
         palunos = alunos.PainelAlunos(f3)
 
-        # login.LoginDialog(self)
+        login.LoginDialog(self)
         self.mainloop()
 
 
