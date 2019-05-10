@@ -6,8 +6,10 @@ import hashlib
 class Sqlite:
 
     __database = 'ufrpe_crud2.sqlite'       # 'private' static db file name
+    db_conn = None
 
     def __init__(self):
+        Sqlite.db_conn = self
         #   open or create database anew if db does not exist
         self.conn = sql.connect(self.__database)
         self.cursor = self.conn.cursor()

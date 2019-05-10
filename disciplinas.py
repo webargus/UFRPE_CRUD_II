@@ -3,6 +3,7 @@
 from tkinter import *
 import treeviewtable as tv
 import tools
+from sqltools import Sqlite
 
 
 class PainelDisciplinas:
@@ -19,11 +20,11 @@ class PainelDisciplinas:
         fDiscip.grid_columnconfigure(1, weight=1)    # expande formulário na horizontal até bordas da janela
         Label(fDiscip, {"text": "Disciplina:"}).grid({"row": 0, "column": 0})
         self.nome = StringVar()
-        self.nomeEdit = Entry(fDiscip, {"textvariable": self.nome}).grid({"row": 0, "column": 1, "columnspan": 3, "sticky": (W, E)})
+        Entry(fDiscip, {"textvariable": self.nome}).grid({"row": 0, "column": 1, "columnspan": 3, "sticky": (W, E)})
         Label(fDiscip, {"text": "Código:"}).grid({"row": 1, "column": 0, "sticky": W})
         self.codigo = StringVar()
-        self.codigoEdit = Entry(fDiscip, {"textvariable": self.codigo}).grid({"row": 1, "column": 1, "sticky": W})
-        self.submitBtn = Button(fDiscip, {"text": "Ok", "width": 10, "command": self._salvar_disciplina}).grid({"row": 1, "column": 2, "pady": 8})
+        Entry(fDiscip, {"textvariable": self.codigo}).grid({"row": 1, "column": 1, "sticky": W})
+        Button(fDiscip, {"text": "Ok", "width": 10, "command": self._salvar_disciplina}).grid({"row": 1, "column": 2, "pady": 8})
         self.delBtn = Button(fDiscip, {"text": "Excluir", "width": 10}).grid({"row": 1, "column": 3, "pady": 8, "padx": 8})
 
         fTreeview = Frame(frame, {"relief": SUNKEN})
@@ -31,7 +32,7 @@ class PainelDisciplinas:
         fTreeview.grid_rowconfigure(0, weight=1)
         fTreeview.grid({"row": 1, "column": 0, "sticky": NSEW})
         self.tree = tv.TreeViewTable(fTreeview, {"Código": 150, 'Disciplina': 600})
-        self.tree.appendItem(("04166", "Teoria Geral da Administração"))
+        self.tree.on_select(self._selecionar_discip)
 
     def _salvar_disciplina(self):
         # valida entrada da disciplina e retorna se inválida
@@ -40,8 +41,16 @@ class PainelDisciplinas:
             return
         # verifica se código já inserido anteriormente
         query = "SELECT * FROM subjects WHERE code = '%s'" % (v[0])
-        print(query)
-
+        Sqlite.db_conn.cursor.execute(query)
+        res = Sqlite.db_conn.cursor.fetchone()
+        print(res)
+        if res is None:     # code not found in db => operation is of type INSERT
+            query = "INSERT INTO subjects (code, name) VALUES('%s', '%s')" % (v[0], v[1])
+        else:               # code already exists in db => operation is of type UPDATE
+            query = "UPDATE subjects SET name = '%s' WHERE subjects.id = %s" % (v[1], res[0])
+        Sqlite.db_conn.cursor.execute(query)
+        Sqlite.db_conn.conn.commit()
+        self.listar_disciplinas()
 
     def _validar_disc(self):
         codigo = self.codigo.get().strip()
@@ -58,6 +67,22 @@ class PainelDisciplinas:
             return None
         return [codigo, nome]
 
+    def listar_disciplinas(self):
+        self.tree.clear()     # clear tree view
+        query = "SELECT * FROM subjects ORDER BY name"
+        for row in Sqlite.db_conn.cursor.execute(query):
+            self.tree.appendItem(row[1:], iid=row[0])
+
+    def _selecionar_discip(self, items):
+        print(items)
+        if len(items) > 1:
+            self._set_discip(('', ''))
+            return
+        self._set_discip((items[0]['text'], items[0]['values'][0]))
+
+    def _set_discip(self, tupla):
+        self.codigo.set(tupla[0])
+        self.nome.set(tupla[1])
 
 
 

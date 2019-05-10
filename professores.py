@@ -30,7 +30,7 @@ class PainelProfessores:
         fTreeview.grid_rowconfigure(0, weight=1)
         fTreeview.grid({"row": 1, "column": 0, "sticky": NSEW})
         self.tree = tv.TreeViewTable(fTreeview, {"CPF": 150, 'Nome': 400, 'Departamento': 200})
-        self.tree.appendItem(("287.871.726-87", "Gilberto Cysneiros"))
+        self.tree.appendItem(("287.871.726-87", "Gilberto Cysneiros", "CEINFO"))
 
 
 

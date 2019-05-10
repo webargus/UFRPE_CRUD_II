@@ -36,10 +36,11 @@ class Gui(Frame):
         n.grid({"row": 0, "column": 0, "sticky": NSEW})
 
         pdiscip = disciplinas.PainelDisciplinas(f1)
+        pdiscip.listar_disciplinas()
         pprofs = professores.PainelProfessores(f2)
         palunos = alunos.PainelAlunos(f3)
 
-        login.LoginDialog(self)
+        # login.LoginDialog(self)
         self.mainloop()
 
 
