@@ -17,7 +17,7 @@ class PainelDisciplinas:
         # cria frame p/ formulário de cadastro de disciplinas
         fDiscip = LabelFrame(frame, {"pady": 8, "padx": 8, "text": " Cadastro "})
         fDiscip.grid({"row": 0, "column": 0, "sticky": NSEW, "pady": 8, "padx": 8})
-        fDiscip.grid_columnconfigure(1, weight=1)    # expande formulário na horizontal até bordas da janela
+        fDiscip.grid_columnconfigure(1, weight=1)    # expande formulário na horizontal até bordas do frame
         Label(fDiscip, {"text": "Disciplina:"}).grid({"row": 0, "column": 0})
         self.nome = StringVar()
         Entry(fDiscip, {"textvariable": self.nome}).grid({"row": 0, "column": 1, "columnspan": 2, "sticky": (W, E)})
