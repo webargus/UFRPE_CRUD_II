@@ -20,7 +20,8 @@ class PainelDisciplinas:
         fDiscip.grid_columnconfigure(1, weight=1)    # expande formulário na horizontal até bordas da janela
         Label(fDiscip, {"text": "Disciplina:"}).grid({"row": 0, "column": 0})
         self.nome = StringVar()
-        Entry(fDiscip, {"textvariable": self.nome}).grid({"row": 0, "column": 1, "columnspan": 3, "sticky": (W, E)})
+        Entry(fDiscip, {"textvariable": self.nome}).grid({"row": 0, "column": 1, "columnspan": 2, "sticky": (W, E)})
+        Button(fDiscip, {"text": ">>", "width": 10}).grid({"row": 0, "column": 3})
         Label(fDiscip, {"text": "Código:"}).grid({"row": 1, "column": 0, "sticky": W})
         self.codigo = StringVar()
         Entry(fDiscip, {"textvariable": self.codigo}).grid({"row": 1, "column": 1, "sticky": W})
@@ -31,7 +32,7 @@ class PainelDisciplinas:
         fTreeview.grid_columnconfigure(0, weight=1)
         fTreeview.grid_rowconfigure(0, weight=1)
         fTreeview.grid({"row": 1, "column": 0, "sticky": NSEW})
-        self.tree = tv.TreeViewTable(fTreeview, {"Código": 150, 'Disciplina': 600})
+        self.tree = tv.TreeViewTable(fTreeview, {"Código": 150, 'Disciplina': 450})
         self.tree.on_select(self._selecionar_discip)
 
     def _salvar_disciplina(self):

@@ -27,7 +27,7 @@ class PainelAlunos:
         fTreeview.grid_columnconfigure(0, weight=1)
         fTreeview.grid_rowconfigure(0, weight=1)
         fTreeview.grid({"row": 1, "column": 0, "sticky": NSEW})
-        self.tree = tv.TreeViewTable(fTreeview, {"CPF": 150, 'Nome': 600})
+        self.tree = tv.TreeViewTable(fTreeview, {"CPF": 150, 'Nome': 450})
         self.tree.appendItem(("278.700.814-34", "Edson Kropniczki"))
 
 
