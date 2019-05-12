@@ -39,16 +39,16 @@ class Sqlite:
         query = '''CREATE TABLE 'users'
                    ('id' INTEGER PRIMARY KEY AUTOINCREMENT,
                     'login' VARCHAR(16) NOT NULL,
-                    'md5' CHAR(32))
+                    'md5' CHAR(32)      NOT NULL)
                 '''
         self.cursor.execute(query)
 
         #   create classes table
         query = '''CREATE TABLE 'classes'
                    ('id' INTEGER PRIMARY KEY AUTOINCREMENT,
-                    'code' CHAR(4),
-                    'semester' CHAR(6),
-                    'subject' CHAR(5))
+                    'code' CHAR(4)      NOT NULL,
+                    'semester' CHAR(6)  NOT NULL,
+                    'subject' INTEGER   NOT NULL)
                 '''
         self.cursor.execute(query)
 

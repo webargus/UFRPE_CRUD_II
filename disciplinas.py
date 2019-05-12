@@ -1,6 +1,7 @@
 
 
 from tkinter import *
+from tkinter import Menu
 import treeviewtable as tv
 import tools
 from sqltools import Sqlite
@@ -8,7 +9,9 @@ from sqltools import Sqlite
 
 class PainelDisciplinas:
 
-    def __init__(self, frame):
+    def __init__(self, frame, turmas):
+        # save reference to 'turmas' obj
+        self.turmas = turmas
 
         frame.grid_rowconfigure(0, weight=0)    # 0 => row won't expand vertically if there's space for that
         frame.grid_rowconfigure(1, weight=1)
@@ -20,13 +23,13 @@ class PainelDisciplinas:
         fDiscip.grid_columnconfigure(1, weight=1)    # expande formulário na horizontal até bordas do frame
         Label(fDiscip, {"text": "Disciplina:"}).grid({"row": 0, "column": 0})
         self.nome = StringVar()
-        Entry(fDiscip, {"textvariable": self.nome}).grid({"row": 0, "column": 1, "columnspan": 2, "sticky": (W, E)})
+        Entry(fDiscip, {"textvariable": self.nome}).grid({"row": 0, "column": 1, "columnspan": 2, "sticky": EW})
         Button(fDiscip, {"width": 30, "image": tools.StaticImages.arrow16}).grid({"row": 0, "column": 3})
         Label(fDiscip, {"text": "Código:"}).grid({"row": 1, "column": 0, "sticky": W})
         self.codigo = StringVar()
         Entry(fDiscip, {"textvariable": self.codigo}).grid({"row": 1, "column": 1, "sticky": W})
         Button(fDiscip, {"text": "Ok", "width": 70, "image": tools.StaticImages.tick16, "compound": "left", "command": self._salvar_disciplina}).grid({"row": 1, "column": 2, "pady": 8})
-        self.delBtn = Button(fDiscip, {"text": "Excluir", "width": 70, "image": tools.StaticImages.del16, "compound": "left"}).grid({"row": 1, "column": 3, "pady": 8, "padx": 8})
+        Button(fDiscip, {"text": "Excluir", "width": 70, "image": tools.StaticImages.del16, "compound": "left"}).grid({"row": 1, "column": 3, "pady": 8, "padx": 8})
 
         fTreeview = Frame(frame, {"relief": SUNKEN})
         fTreeview.grid_columnconfigure(0, weight=1)
@@ -34,6 +37,22 @@ class PainelDisciplinas:
         fTreeview.grid({"row": 1, "column": 0, "sticky": NSEW})
         self.tree = tv.TreeViewTable(fTreeview, {"Código": 150, 'Disciplina': 450})
         self.tree.on_select(self._selecionar_discip)
+        self.tree.on_mouse_right(self._popup)
+
+        self.popup_menu = Menu(frame, tearoff=0, bd=4)
+        self.popup_menu.add_command(label="Adicionar", command=self._set_discip_turma)
+
+    def _popup(self, event):
+        sel = len(self.tree.get_selection())
+        if sel == 0 or sel > 1:
+            return
+        try:
+            self.popup_menu.tk_popup(event.x_root, event.y_root, 0)
+        finally:
+            self.popup_menu.grab_release()
+
+    def _set_discip_turma(self):
+        self.turmas.set_disciplina(self.tree.get_selection())
 
     def _salvar_disciplina(self):
         # valida entrada da disciplina e retorna se inválida
@@ -75,7 +94,7 @@ class PainelDisciplinas:
             self.tree.appendItem(row[1:], iid=row[0])
 
     def _selecionar_discip(self, items):
-        print(items)
+        #   print(items)    #   debug
         if len(items) > 1:
             self._set_discip(('', ''))
             return

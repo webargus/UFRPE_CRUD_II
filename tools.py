@@ -40,6 +40,13 @@ def validar_disciplina(codigo):
     return True
 
 
+def validar_periodo(periodo):
+    #   verifica se o periodo está no formato aaaa.s, p.ex., 2019.1, 2018.2
+    if re.match(periodo_pattern, periodo) is None:
+        return False
+    return True
+
+
 def aviso_erro(erros):
     msg = "Favor verificar:\n"
     messagebox.showwarning("...Êpa!!", (msg + "\n".join(erros)))

@@ -46,7 +46,7 @@ class Gui(Frame):
         frame.grid_columnconfigure(0, weight=1)
         self.turmas = turmas.Turmas(frame)
 
-        pdiscip = disciplinas.PainelDisciplinas(f1)
+        pdiscip = disciplinas.PainelDisciplinas(f1, self.turmas)
         pdiscip.listar_disciplinas()
         pprofs = professores.PainelProfessores(f2)
         palunos = alunos.PainelAlunos(f3)
