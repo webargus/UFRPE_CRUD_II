@@ -1,9 +1,24 @@
 import re
+import tkinter
 from tkinter import messagebox
 
 cpf_pattern = r"^\d{11}$"               # expressão regular para validar CPF
 disciplina_pattern = r"^\d{5}$"         # expressão regular para validar código de disciplina
 periodo_pattern = r"^\d{4}\.\d{1}$"     # expressão regular para validar período de turma
+
+img_path = "C:\\Users\\Edson\\PycharmProjects\\UFRPE_CRUD_II\\img\\"
+icon32 = img_path + "brasao32.ico"
+tick16 = img_path+"tick.png"
+delete16 = img_path + "delete16.png"
+arrow16 = img_path + "arrow16.png"
+
+
+class StaticImages:
+
+    def __init__(self):
+        StaticImages.tick16 = tkinter.PhotoImage(file=tick16)
+        StaticImages.del16 = tkinter.PhotoImage(file=delete16)
+        StaticImages.arrow16 = tkinter.PhotoImage(file=arrow16)
 
 
 def center_window(win):

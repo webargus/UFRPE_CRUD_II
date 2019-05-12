@@ -32,8 +32,8 @@ class Turmas:
         Button(fprofs, {"text": "X", "padx": 4}).grid({"row": 0, "column": 1, "padx": 4})
 
         # form ok/delete buttons
-        Button(ftop, {"text": "Ok", "width": 10}).grid({"row": 1, "column": 7, "padx": 4})
-        Button(ftop, {"text": "Excluir", "width": 10}).grid({"row": 1, "column": 8})
+        Button(ftop, {"text": "Ok", "width": 70, "image": tools.StaticImages.tick16, "compound": "left"}).grid({"row": 1, "column": 7, "padx": 4})
+        Button(ftop, {"text": "Excluir", "width": 70, "image": tools.StaticImages.del16, "compound": "left"}).grid({"row": 1, "column": 8})
 
         fbottom = Frame(frame)
         # make row 0 of fbottom extend vertically to take up the whole vertical space available

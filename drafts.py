@@ -1,53 +1,35 @@
-import tkinter as TK
+import tkinter # Tkinter -> tkinter in Python 3
 
-class MyApp(TK.Frame):
+class FancyListbox(tkinter.Listbox):
 
-    def __init__(self, master):
-        super().__init__(master) # initialize the 'TK.Frame'
+    def __init__(self, parent, *args, **kwargs):
+        tkinter.Listbox.__init__(self, parent, *args, **kwargs)
 
-        # configure the root Frame (i.e. 'self')
-        self.master = master # just for reference later
-        self.master.grid_rowconfigure(0, weight = 1)
-        self.master.grid_columnconfigure(0, weight = 1)
-        self.grid(column = 0, row = 0, sticky = 'nsew')
-        self.grid_rowconfigure(0, weight = 1)
-        self.grid_columnconfigure(0, weight = 1) # columns will split space
-        self.grid_columnconfigure(1, weight = 1) # columns will split space
+        self.popup_menu = tkinter.Menu(self, tearoff=0)
+        self.popup_menu.add_command(label="Delete",
+                                    command=self.delete_selected)
+        self.popup_menu.add_command(label="Select All",
+                                    command=self.select_all)
 
-        # configure internal left Frame
-        self.left_frame = TK.Frame(self, borderwidth = 2, relief = TK.SUNKEN)
-        self.left_frame.grid_rowconfigure(0, weight = 1) # rows will split space
-        self.left_frame.grid_rowconfigure(1, weight = 1) # rows will split space
-        self.left_frame.grid_columnconfigure(0, weight = 1)
-        self.left_frame.grid(column = 0, row = 0, sticky = 'nsew')
-        self.left_box0 = TK.Listbox(self.left_frame, borderwidth = 0)
-        self.left_box0.grid(column = 0, row = 0, sticky = 'nsew')
-        self.left_box1 = TK.Listbox(self.left_frame, borderwidth = 0)
-        self.left_box1.grid(column = 0, row = 1, sticky = 'nsew')
+        self.bind("<Button-3>", self.popup) # Button-2 on Aqua
 
-        # configure internal right Frame
-        self.right_frame = TK.Frame(self, borderwidth = 2, relief = TK.SUNKEN)
-        self.right_frame.grid_rowconfigure(0, weight = 1) # rows will split space
-        self.right_frame.grid_rowconfigure(1, weight = 1) # rows will split space
-        self.right_frame.grid_columnconfigure(0, weight = 1)
-        self.right_frame.grid(column = 1, row = 0, sticky = 'nsew')
-        self.right_box0 = TK.Listbox(self.right_frame, borderwidth = 0)
-        self.right_box0.grid(column = 0, row = 0, sticky = 'nsew')
-        self.right_box1 = TK.Listbox(self.right_frame, borderwidth = 0)
-        self.right_box1.grid(column = 0, row = 1, sticky = 'nsew')
+    def popup(self, event):
+        try:
+            self.popup_menu.tk_popup(event.x_root, event.y_root, 0)
+        finally:
+            self.popup_menu.grab_release()
 
-        for i in range(20):
-            self.left_box0.insert(TK.END, 'lb0')
-            self.left_box1.insert(TK.END, 'lb1')
-            self.right_box0.insert(TK.END, 'rb0')
-            self.right_box1.insert(TK.END, 'rb1')
+    def delete_selected(self):
+        for i in self.curselection()[::-1]:
+            self.delete(i)
+
+    def select_all(self):
+        self.selection_set(0, 'end')
 
 
-if __name__ == '__main__':  # get in the habit of doing this
-    root = TK.Tk()
-    root.title('My App')
-    root.geometry('{}x{}'.format(768, 500))
-    root.resizable(width = False, height = False)
-    app = MyApp(root)
-    app.mainloop()
-
+root = tkinter.Tk()
+flb = FancyListbox(root, selectmode='multiple')
+for n in range(10):
+    flb.insert('end', n)
+flb.pack()
+root.mainloop()

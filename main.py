@@ -16,6 +16,8 @@ class Gui(Frame):
 
     def __init__(self):
         Frame.__init__(self)
+        self.master.iconbitmap(tools.icon32)
+        tools.StaticImages()
         self.master.wm_minsize(1200, 600)
         self.master.state('normal')
         self.master.title("Projeto CRUD II - Controle Acadêmico Simplificado")
