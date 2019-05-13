@@ -50,9 +50,15 @@ class Turmas:
         fprofs.grid_columnconfigure(0, weight=1)
         self.listbox = ProfessorListbox(fprofs)
         self.listbox.grid({"row": 0, "column": 0, "sticky": EW})
-        Button(fprofs, {"text": "X", "padx": 4}).grid({"row": 0, "column": 1, "padx": 4})
 
-        # form ok/delete buttons
+        # form new/ok/delete buttons
+        config = {"text": "Novo",
+                  "width": 70,
+                  "image": tools.StaticImages.new16,
+                  "compound": "left",
+                  "command": self._nova_turma
+                  }
+        Button(ftop, config).grid({"row": 1, "column": 6, "padx": 4})
         config = {"text": "Ok",
                   "width": 70,
                   "image": tools.StaticImages.tick16,
@@ -78,14 +84,34 @@ class Turmas:
         self.tree = tv.TreeViewTable(fbottom, {"Código": 50, "Período": 100, "Código Disciplina": 70, "Disciplina": 300})
         self.tree.on_select(self._selecionar_turma)
 
+        self._listar_turmas()
+
     def set_disciplina(self, discip):
         #   print(discip)   #   debug
         self.discip.set_disciplina(discip)
 
     def _selecionar_turma(self, items):
+        # just clear registry form and abort if user selected more than one 'turma'
         if len(items) > 1:
             self._limpa_formulario_cadastro()
             return
+        if len(items) == 0:
+            return
+        # copy items to form
+        print(items)
+        self.codigo.set(items[0]['text'])
+        self.periodo.set(items[0]['values'][0])
+        query = '''SELECT subjects.id, subjects.code, subjects.name FROM classes LEFT JOIN subjects
+                   ON subjects.id = classes.subject WHERE classes.id = {}'''.format(items[0]['iid'])
+        print("query=", query)
+        Sqlite.db_conn.cursor.execute(query)
+        row = Sqlite.db_conn.cursor.fetchone()
+        param = {'id': row[0], 'codigo': row[1], 'disciplina': row[2]}
+        self.discip.set_disciplina(param)
+
+    def _nova_turma(self):
+        self._limpa_formulario_cadastro()
+        self.tree.clear_selection()
 
     def _limpa_formulario_cadastro(self):
         self.codigo.set('')
@@ -98,18 +124,24 @@ class Turmas:
         if turma is None:
             return
         print(turma)        # debug
-        # decide whether we're editing or inserting new turma based on value of class var self.id_turma
-        if self.id_turma is None:       # insertion operation
+        if turma['id'] is None:       # insertion operation
             query = '''INSERT INTO classes ('code', 'semester', 'subject')
                        VALUES('{}', '{}', {})
-                    '''.format(turma[0], turma[1], turma[2])
-            Sqlite.db_conn.cursor.execute(query)
-            self.id_turma = Sqlite.db_conn.cursor.lastrowid
-            self._listar_turmas()
-
-        print(query)        # debug
+                    '''.format(turma['codigo'], turma['periodo'], turma['disciplina'])
+        else:                                   # update op
+            query = '''UPDATE classes SET 'code' = '{}', 'semester' = '{}', 'subject' = {}
+                       WHERE classes.id = {}'''.format(turma['codigo'],
+                                                       turma['periodo'],
+                                                       turma['disciplina'],
+                                                       turma['id']
+                                                       )
+        print(query)  # debug
+        Sqlite.db_conn.cursor.execute(query)
+        Sqlite.db_conn.conn.commit()
+        self._listar_turmas()
 
     def _listar_turmas(self):
+        self._limpa_formulario_cadastro()
         self.tree.clear()
         query = '''SELECT classes.id, classes.code, classes.semester,
                    subjects.code, subjects.name FROM classes LEFT JOIN subjects
@@ -127,14 +159,23 @@ class Turmas:
             erros.append("Período em branco")
         elif not tools.validar_periodo(periodo):
             erros.append("Período inválido (formato: aaaa.s, ex.: 2019.1)")
-        disciplina = self.discip.get_id_disciplina()
+        disciplina = self.discip.get()
         if disciplina is None:
             erros.append("Disciplina em branco")
 
         if len(erros) > 0:
             tools.aviso_erro(erros)
             return None
-        return [codigo, periodo, disciplina]
+        # decide whether we're editing or inserting new turma based on tree view selection;
+        # if no selection made or user selected more than one class, they must have started
+        # typing in a blank form -> new registry
+        sel = self.tree.get_selection()
+        if len(sel) == 0 or len(sel) > 1:
+            iid = None
+        else:
+            iid = sel[0]['iid']
+
+        return {'codigo': codigo, 'periodo': periodo, 'disciplina': disciplina, 'id': iid}
 
 
 class ProfessorListbox(Listbox):
@@ -155,16 +196,18 @@ class DisciplinaLabel(Label):
 
     def set_disciplina(self, discip):
         self.discip = discip
-        self.label.set(discip[0]['text'] + ' - ' + discip[0]['values'][0])
-        print(self.discip)      #   debug
+        self.label.set(discip['codigo'] + ' - ' + discip['disciplina'])
+        # print(self.discip)      # debug
 
-    def get_id_disciplina(self):
+    def get(self):
         if self.discip is None:
             return None
-        return self.discip[0]['iid']
+        return self.discip['id']
 
     def clear(self):
         self.label.set('')
+        self.discip = None
+
 
 
 

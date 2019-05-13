@@ -2,7 +2,8 @@ import re
 import tkinter
 from tkinter import messagebox
 
-cpf_pattern = r"^\d{11}$"               # expressão regular para validar CPF
+cpf_pattern1 = r"^\d{11}$"              # expressões regulares para validar CPF
+# cpf_pattern2 = r"^(\d{3}\.){2}\d{3}-\d{2}$"
 disciplina_pattern = r"^\d{5}$"         # expressão regular para validar código de disciplina
 periodo_pattern = r"^\d{4}\.\d{1}$"     # expressão regular para validar período de turma
 
@@ -11,7 +12,7 @@ icon32 = img_path + "brasao32.ico"
 tick16 = img_path+"tick.png"
 delete16 = img_path + "delete16.png"
 arrow16 = img_path + "arrow16.png"
-
+new16 = img_path + "plus16.png"
 
 class StaticImages:
 
@@ -19,6 +20,7 @@ class StaticImages:
         StaticImages.tick16 = tkinter.PhotoImage(file=tick16)
         StaticImages.del16 = tkinter.PhotoImage(file=delete16)
         StaticImages.arrow16 = tkinter.PhotoImage(file=arrow16)
+        StaticImages.new16 = tkinter.PhotoImage(file=new16)
 
 
 def center_window(win):
@@ -45,6 +47,23 @@ def validar_periodo(periodo):
     if re.match(periodo_pattern, periodo) is None:
         return False
     return True
+
+
+def validar_cpf(cpf):
+    #   Função para validar CPF; retorna True se CPF válido, False se não válido
+    if re.match(cpf_pattern1, cpf) is None:
+        return False
+    return True
+
+def formatar_cpf(cpf):
+    #   retorna string de CPF no formato xxx.xxx.xxx-xx
+    ret = ''        # string acumuladora do CPF formatado
+    for x in range(0, 9, 3):        # acrescenta '.' a cada 3 algarismos
+        ret += cpf[x:x+3] + '.'
+    ret = ret[:-1]                  # descarta o último '.' acrescentado e
+    ret += '-' + cpf[-2:]           # substitui por um '-' seguido dos 2 últimos algarismos
+    return ret
+
 
 
 def aviso_erro(erros):

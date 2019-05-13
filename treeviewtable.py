@@ -55,4 +55,7 @@ class TreeViewTable(ttk.Treeview):
             ret.append(dict)
         return ret
 
+    def clear_selection(self):
+        for item in self.selection():
+            self.selection_remove(item)
 

@@ -60,6 +60,37 @@ class Sqlite:
                 '''
         self.cursor.execute(query)
 
+        #   create professors table
+        query = '''CREATE TABLE 'professors'
+                   ('id' INTEGER PRIMARY KEY AUTOINCREMENT,
+                    'cpf' CHAR(11)              NOT NULL,
+                    'name' VARCHAR(50)          NOT NULL,
+                    'department' VARCHAR(30)    NOT NULL)
+                '''
+        self.cursor.execute(query)
+
+        #   create students table
+        query = '''CREATE TABLE 'students'
+                   ('id' INTEGER PRIMARY KEY AUTOINCREMENT,
+                    'cpf' CHAR(11)              NOT NULL,
+                    'name' VARCHAR(50)          NOT NULL)
+                '''
+        self.cursor.execute(query)
+
+        #   create binder table class_professors
+        query = '''CREATE TABLE 'class_professors'
+                   ('class_id' INTEGER,
+                    'professor_id' INTEGER)
+                '''
+        self.cursor.execute(query)
+
+        #   create binder table class_students
+        query = '''CREATE TABLE 'class_students'
+                   ('class_id' INTEGER,
+                    'student_id' INTEGER)
+                '''
+        self.cursor.execute(query)
+
         #   enter secret admin md5 hash, so that we have a first user to start with
         query = '''INSERT INTO users (login, md5) 
                    VALUES ('admin', 'f8d99de4eeefbe556a632cc6a5859898')

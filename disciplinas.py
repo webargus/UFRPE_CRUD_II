@@ -10,6 +10,7 @@ from sqltools import Sqlite
 class PainelDisciplinas:
 
     def __init__(self, frame, turmas):
+
         # save reference to 'turmas' obj
         self.turmas = turmas
 
@@ -52,7 +53,9 @@ class PainelDisciplinas:
             self.popup_menu.grab_release()
 
     def _set_discip_turma(self):
-        self.turmas.set_disciplina(self.tree.get_selection())
+        sel = self.tree.get_selection()
+        param = {'id': sel[0]['iid'], 'codigo': sel[0]['text'], 'disciplina': sel[0]['values'][0]}
+        self.turmas.set_disciplina(param)
 
     def _salvar_disciplina(self):
         # valida entrada da disciplina e retorna se inválida
