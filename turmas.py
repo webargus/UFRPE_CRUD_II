@@ -101,16 +101,30 @@ class Turmas:
         if len(items) == 0:
             return
         # copy items to form
-        print(items)
+        # print(items)      # debug
         self.codigo.set(items[0]['text'])
         self.periodo.set(items[0]['values'][0])
         query = '''SELECT subjects.id, subjects.code, subjects.name FROM classes LEFT JOIN subjects
                    ON subjects.id = classes.subject WHERE classes.id = {}'''.format(items[0]['iid'])
-        print("query=", query)
+        # print("query=", query) # debug
         Sqlite.db_conn.cursor.execute(query)
         row = Sqlite.db_conn.cursor.fetchone()
         param = {'id': row[0], 'codigo': row[1], 'disciplina': row[2]}
         self.discip.set_disciplina(param)
+        # read fresh, complete class professor list from db
+        query = '''SELECT professor_id FROM class_professors WHERE class_id = {}'''.format(items[0]['iid'])
+        Sqlite.db_conn.cursor.execute(query)
+        ids = Sqlite.db_conn.cursor.fetchall()
+        ids = [str(x[0]) for x in ids]
+        query = '''SELECT * FROM professors WHERE id IN ({})'''.format(', '.join(ids))
+        Sqlite.db_conn.cursor.execute(query)
+        profs = Sqlite.db_conn.cursor.fetchall()
+        params = []
+        for prof in profs:
+            params.append({'id': str(prof[0]), 'cpf': prof[1], 'nome': prof[2], 'depto': prof[3]})
+        self.listbox.clear()
+        self.listbox.append(params)
+
 
     def _nova_turma(self):
         self._limpa_formulario_cadastro()
@@ -131,6 +145,8 @@ class Turmas:
             query = '''INSERT INTO classes ('code', 'semester', 'subject')
                        VALUES('{}', '{}', {})
                     '''.format(turma['codigo'], turma['periodo'], turma['disciplina'])
+            Sqlite.db_conn.cursor.execute(query)
+            turma['id'] = Sqlite.db_conn.cursor.lastrowid
         else:                                   # update op
             query = '''UPDATE classes SET 'code' = '{}', 'semester' = '{}', 'subject' = {}
                        WHERE classes.id = {}'''.format(turma['codigo'],
@@ -138,8 +154,17 @@ class Turmas:
                                                        turma['disciplina'],
                                                        turma['id']
                                                        )
-        print(query)  # debug
+            Sqlite.db_conn.cursor.execute(query)
+
+        # update binding table between professors and classes
+        query = '''DELETE FROM class_professors WHERE class_id = {}'''.format(turma['id'])
         Sqlite.db_conn.cursor.execute(query)
+        # prepare query to bind professors to class
+        query = '''INSERT INTO class_professors (class_id, professor_id) VALUES({}, ?)'''.format(turma['id'])
+        ids = self.listbox.get_prof_ids()
+        for prof_id in ids:
+            Sqlite.db_conn.cursor.execute(query, prof_id)
+        # commit db transaction
         Sqlite.db_conn.conn.commit()
         self._listar_turmas()
 
@@ -185,7 +210,7 @@ class ProfessorListbox(Listbox):
 
     def __init__(self, parent):
         super().__init__(parent, {"height": 3, "selectmode": EXTENDED})
-        self.params = []
+        self.professors = []
         self.popup_menu = Menu(self, tearoff=0, bd=4)
         self.popup_menu.add_command(label="Excluir", command=self.remove_selected)
         self.bind('<3>', self._popup_menu)
@@ -201,11 +226,11 @@ class ProfessorListbox(Listbox):
     def append(self, params):
         for prof in params:
             if self.find_prof(prof['id']) is None:
-                self.params.append(prof)
+                self.professors.append(prof)
         self.refresh()
 
     def find_prof(self, prof_id):
-        for prof in self.params:
+        for prof in self.professors:
             if prof['id'] == prof_id:
                 return prof
         return None
@@ -215,23 +240,26 @@ class ProfessorListbox(Listbox):
         sel = self.curselection()
         # accumulate items to be removed in array according to their indices
         to_remove = []
-        for ix, row in enumerate(self.params):
+        for ix, row in enumerate(self.professors):
             if ix in sel:
                 to_remove.append(row)
         # actually remove items
         for row in to_remove:
-            self.params.remove(row)
+            self.professors.remove(row)
         # refresh listbox
         self.refresh()
 
     def refresh(self):
         self.delete(0, END)
-        for row in self.params:
+        for row in self.professors:
             self.insert(END, "%s - %s" % (row['nome'], row['depto']))
 
     def clear(self):
-        self.delete(0, END)
-        del self.params[:]
+        self.delete(0, END)     # clear GUI
+        del self.professors[:]      # clear professors list
+
+    def get_prof_ids(self):
+        return [iid for registry in self.professors for iid in registry['id']]
 
 
 class DisciplinaLabel(Label):
