@@ -90,6 +90,9 @@ class Turmas:
         #   print(discip)   #   debug
         self.discip.set_disciplina(discip)
 
+    def set_professores(self, params):
+        self.listbox.append(params)
+
     def _selecionar_turma(self, items):
         # just clear registry form and abort if user selected more than one 'turma'
         if len(items) > 1:
@@ -181,10 +184,54 @@ class Turmas:
 class ProfessorListbox(Listbox):
 
     def __init__(self, parent):
-        super().__init__(parent, {"height": 3})
+        super().__init__(parent, {"height": 3, "selectmode": EXTENDED})
+        self.params = []
+        self.popup_menu = Menu(self, tearoff=0, bd=4)
+        self.popup_menu.add_command(label="Excluir", command=self.remove_selected)
+        self.bind('<3>', self._popup_menu)
+
+    def _popup_menu(self, event):
+        if len(self.curselection()) == 0:
+            return
+        try:
+            self.popup_menu.tk_popup(event.x_root, event.y_root, 0)
+        finally:
+            self.popup_menu.grab_release()
+
+    def append(self, params):
+        for prof in params:
+            if self.find_prof(prof['id']) is None:
+                self.params.append(prof)
+        self.refresh()
+
+    def find_prof(self, prof_id):
+        for prof in self.params:
+            if prof['id'] == prof_id:
+                return prof
+        return None
+
+    def remove_selected(self):
+        # get selected indices
+        sel = self.curselection()
+        # accumulate items to be removed in array according to their indices
+        to_remove = []
+        for ix, row in enumerate(self.params):
+            if ix in sel:
+                to_remove.append(row)
+        # actually remove items
+        for row in to_remove:
+            self.params.remove(row)
+        # refresh listbox
+        self.refresh()
+
+    def refresh(self):
+        self.delete(0, END)
+        for row in self.params:
+            self.insert(END, "%s - %s" % (row['nome'], row['depto']))
 
     def clear(self):
         self.delete(0, END)
+        del self.params[:]
 
 
 class DisciplinaLabel(Label):

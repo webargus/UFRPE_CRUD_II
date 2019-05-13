@@ -59,7 +59,7 @@ class PainelProfessores:
 
     def _popup(self, event):
         sel = len(self.tree.get_selection())
-        if sel == 0 or sel > 1:
+        if sel == 0:
             return
         try:
             self.popup_menu.tk_popup(event.x_root, event.y_root, 0)
@@ -69,14 +69,14 @@ class PainelProfessores:
     def _set_prof_turma(self):
         sel = self.tree.get_selection()
         param = []
-        for ix in sel:
-            param.append({'id': sel[ix]['iid'],
-                          'cpf': sel[ix]['text'],
-                          'nome': sel[ix]['values'][0],
-                          'depto': sel[ix]['values'][1]
+        for s in sel:
+            param.append({'id': s['iid'],
+                          'cpf': s['text'],
+                          'nome': s['values'][0],
+                          'depto': s['values'][1]
                           }
                          )
-        self.turmas.set_professor(param)
+        self.turmas.set_professores(param)
 
     def _salvar_professor(self):
         # valida entrada do professor e retorna se inválida
