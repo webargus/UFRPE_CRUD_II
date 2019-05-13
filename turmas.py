@@ -8,6 +8,11 @@ class Turmas:
 
     def __init__(self, parent):
 
+        # create Turmas main frame;
+        # main frame has 1 column and 2 rows stacked up;
+        # the top row gets the class edit/create form,
+        # while the one below it gets the 'turmas' treeview;
+        # the bottom row expands up and down taking up all vertical space available
         frame = Frame(parent)
         frame.grid_columnconfigure(0, weight=1)
         frame.grid_rowconfigure(0, weight=0)
@@ -43,8 +48,8 @@ class Turmas:
         fprofs = LabelFrame(ftop, {"pady": 4, "padx": 4, "text": " Professor(es) "})
         fprofs.grid({"row": 1, "column": 0, "columnspan": 6, "sticky": EW})
         fprofs.grid_columnconfigure(0, weight=1)
-        listbox = ProfessorListbox(fprofs)
-        listbox.grid({"row": 0, "column": 0, "sticky": EW})
+        self.listbox = ProfessorListbox(fprofs)
+        self.listbox.grid({"row": 0, "column": 0, "sticky": EW})
         Button(fprofs, {"text": "X", "padx": 4}).grid({"row": 0, "column": 1, "padx": 4})
 
         # form ok/delete buttons
@@ -62,6 +67,7 @@ class Turmas:
                   }
         Button(ftop, config).grid({"row": 1, "column": 8})
 
+        # create frame to insert treeview
         fbottom = Frame(frame)
         # make row 0 of fbottom extend vertically to take up the whole vertical space available
         # in parent Frame row (row 1 of frame obj)
@@ -70,16 +76,46 @@ class Turmas:
         fbottom.grid({"row": 1, "column": 0, "sticky": NSEW})
 
         self.tree = tv.TreeViewTable(fbottom, {"Código": 50, "Período": 100, "Código Disciplina": 70, "Disciplina": 300})
+        self.tree.on_select(self._selecionar_turma)
 
     def set_disciplina(self, discip):
         #   print(discip)   #   debug
         self.discip.set_disciplina(discip)
+
+    def _selecionar_turma(self, items):
+        if len(items) > 1:
+            self._limpa_formulario_cadastro()
+            return
+
+    def _limpa_formulario_cadastro(self):
+        self.codigo.set('')
+        self.periodo.set('')
+        self.discip.clear()
+        self.listbox.clear()
 
     def _salvar_turma(self):
         turma = self._validar_turma()
         if turma is None:
             return
         print(turma)        # debug
+        # decide whether we're editing or inserting new turma based on value of class var self.id_turma
+        if self.id_turma is None:       # insertion operation
+            query = '''INSERT INTO classes ('code', 'semester', 'subject')
+                       VALUES('{}', '{}', {})
+                    '''.format(turma[0], turma[1], turma[2])
+            Sqlite.db_conn.cursor.execute(query)
+            self.id_turma = Sqlite.db_conn.cursor.lastrowid
+            self._listar_turmas()
+
+        print(query)        # debug
+
+    def _listar_turmas(self):
+        self.tree.clear()
+        query = '''SELECT classes.id, classes.code, classes.semester,
+                   subjects.code, subjects.name FROM classes LEFT JOIN subjects
+                   ON classes.subject = subjects.id ORDER BY classes.semester ASC'''
+        for row in Sqlite.db_conn.cursor.execute(query):
+            self.tree.appendItem(row[1:], iid=row[0])
 
     def _validar_turma(self):
         erros = []
@@ -106,6 +142,9 @@ class ProfessorListbox(Listbox):
     def __init__(self, parent):
         super().__init__(parent, {"height": 3})
 
+    def clear(self):
+        self.delete(0, END)
+
 
 class DisciplinaLabel(Label):
 
@@ -123,6 +162,9 @@ class DisciplinaLabel(Label):
         if self.discip is None:
             return None
         return self.discip[0]['iid']
+
+    def clear(self):
+        self.label.set('')
 
 
 
