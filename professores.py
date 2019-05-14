@@ -95,6 +95,7 @@ class PainelProfessores:
         Sqlite.db_conn.cursor.execute(query)
         Sqlite.db_conn.conn.commit()
         self.listar_professores()
+        self.turmas.listar_turmas()
 
     def _validar_professor(self):
         erros = []

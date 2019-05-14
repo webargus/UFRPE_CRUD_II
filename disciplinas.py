@@ -24,8 +24,7 @@ class PainelDisciplinas:
         fDiscip.grid_columnconfigure(1, weight=1)    # expande formulário na horizontal até bordas do frame
         Label(fDiscip, {"text": "Disciplina:"}).grid({"row": 0, "column": 0})
         self.nome = StringVar()
-        Entry(fDiscip, {"textvariable": self.nome}).grid({"row": 0, "column": 1, "columnspan": 2, "sticky": EW})
-        Button(fDiscip, {"width": 30, "image": tools.StaticImages.arrow16}).grid({"row": 0, "column": 3})
+        Entry(fDiscip, {"textvariable": self.nome}).grid({"row": 0, "column": 1, "columnspan": 3, "sticky": EW})
         Label(fDiscip, {"text": "Código:"}).grid({"row": 1, "column": 0, "sticky": W})
         self.codigo = StringVar()
         Entry(fDiscip, {"textvariable": self.codigo}).grid({"row": 1, "column": 1, "sticky": W})
@@ -74,6 +73,7 @@ class PainelDisciplinas:
         Sqlite.db_conn.cursor.execute(query)
         Sqlite.db_conn.conn.commit()
         self.listar_disciplinas()
+        self.turmas.listar_turmas()
 
     def _validar_disc(self):
         codigo = self.codigo.get().strip()

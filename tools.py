@@ -11,7 +11,6 @@ img_path = "C:\\Users\\Edson\\PycharmProjects\\UFRPE_CRUD_II\\img\\"
 icon32 = img_path + "brasao32.ico"
 tick16 = img_path+"tick.png"
 delete16 = img_path + "delete16.png"
-arrow16 = img_path + "arrow16.png"
 new16 = img_path + "plus16.png"
 
 class StaticImages:
@@ -19,7 +18,6 @@ class StaticImages:
     def __init__(self):
         StaticImages.tick16 = tkinter.PhotoImage(file=tick16)
         StaticImages.del16 = tkinter.PhotoImage(file=delete16)
-        StaticImages.arrow16 = tkinter.PhotoImage(file=arrow16)
         StaticImages.new16 = tkinter.PhotoImage(file=new16)
 
 
@@ -55,6 +53,7 @@ def validar_cpf(cpf):
         return False
     return True
 
+
 def formatar_cpf(cpf):
     #   retorna string de CPF no formato xxx.xxx.xxx-xx
     ret = ''        # string acumuladora do CPF formatado
@@ -64,6 +63,25 @@ def formatar_cpf(cpf):
     ret += '-' + cpf[-2:]           # substitui por um '-' seguido dos 2 últimos algarismos
     return ret
 
+
+def desformatar_cpf(cpf):
+    ret = cpf.replace('.', '')
+    ret = ret.replace('-', '')
+    return ret
+
+
+class CPFStringVar(tkinter.StringVar):
+    def __init__(self):
+        super().__init__()
+
+    def set(self, v):
+        v = formatar_cpf(v)
+        super().set(v)
+
+    def get(self):
+        v = super().get()
+        v = desformatar_cpf(v)
+        return v
 
 
 def aviso_erro(erros):

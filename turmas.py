@@ -84,7 +84,7 @@ class Turmas:
         self.tree = tv.TreeViewTable(fbottom, {"Código": 50, "Período": 100, "Código Disciplina": 70, "Disciplina": 300})
         self.tree.on_select(self._selecionar_turma)
 
-        self._listar_turmas()
+        self.listar_turmas()
 
     def set_disciplina(self, discip):
         #   print(discip)   #   debug
@@ -166,9 +166,13 @@ class Turmas:
             Sqlite.db_conn.cursor.execute(query, prof_id)
         # commit db transaction
         Sqlite.db_conn.conn.commit()
-        self._listar_turmas()
+        self.listar_turmas()
 
-    def _listar_turmas(self):
+    def listar_turmas(self):
+        sel = self.tree.get_selection()
+        items = []
+        if len(sel) > 0:
+            items = [x['iid'] for x in sel]
         self._limpa_formulario_cadastro()
         self.tree.clear()
         query = '''SELECT classes.id, classes.code, classes.semester,
@@ -176,6 +180,8 @@ class Turmas:
                    ON classes.subject = subjects.id ORDER BY classes.semester ASC'''
         for row in Sqlite.db_conn.cursor.execute(query):
             self.tree.appendItem(row[1:], iid=row[0])
+
+        self.tree.selection_set(items)
 
     def _validar_turma(self):
         erros = []
