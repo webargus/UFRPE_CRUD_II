@@ -87,7 +87,7 @@ class PainelProfessores:
         query = "SELECT * FROM professors WHERE cpf = '%s'" % (v[0])
         Sqlite.db_conn.cursor.execute(query)
         res = Sqlite.db_conn.cursor.fetchone()
-        print(res)
+        # print(res)    # debug
         if res is None:     # CPF not found in db => operation is of type INSERT
             query = "INSERT INTO professors (cpf, name, department) VALUES('%s', '%s', '%s')" % (v[0], v[1], v[2])
         else:               # code already exists in db => operation is of type UPDATE

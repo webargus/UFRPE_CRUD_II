@@ -211,6 +211,22 @@ class Turmas:
 
         return {'codigo': codigo, 'periodo': periodo, 'disciplina': disciplina, 'id': iid}
 
+    def set_alunos(self, ids):
+        sel = self.tree.get_selection()
+        turma_ids = []
+        for turma in sel:
+            turma_ids.append(turma['iid'])
+            query = '''SELECT student_id FROM class_students WHERE class_id = {}'''.format(turma['iid'])
+            Sqlite.db_conn.cursor.execute(query)
+            res = Sqlite.db_conn.cursor.fetchall()
+            for iid in ids:
+                if iid in res:
+                    continue
+                query = '''INSERT INTO class_students (class_id, student_id)
+                           VALUES({}, {})'''.format(turma['iid'], iid)
+                Sqlite.db_conn.cursor.execute(query)
+        return turma_ids
+
 
 class ProfessorListbox(Listbox):
 
