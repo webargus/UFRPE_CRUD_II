@@ -84,7 +84,7 @@ class PainelAlunos:
             for turma in turmas:
                 turma = list(turma)
                 class_id = turma.pop()
-                # assign child id to unique string id;
+                # assign unique string id to child id;
                 # string id = parent id = student PK (iid) + hyphen + class primary key (class_id)
                 str_id = str(iid) + "-" + str(class_id)
                 if self._checa_turma(iid, str_id):
@@ -139,25 +139,30 @@ class PainelAlunos:
     def listar_alunos(self):
         self.tree.clear()     # clear tree view
         query = "SELECT * FROM students ORDER BY name"
-        for row in Sqlite.db_conn.cursor.execute(query):
+        students = Sqlite.db_conn.cursor.execute(query).fetchall()
+        for row in students:
             self.tree.appendItem(row[1:], iid=row[0])
-            query = '''SELECT classes.code, classes.semester, subjects.name, classes.id
-                       FROM classes LEFT JOIN subjects ON classes.subject = subjects.id
-                       WHERE classes.id '''
+            # get ids of classes in which student is enrolled
+            query = '''SELECT class_students.class_id FROM class_students
+                       WHERE student_id = {}'''.format(row[0])
+            student_classes = Sqlite.db_conn.cursor.execute(query).fetchall()
+            for class_id in student_classes:
+
+                query = '''SELECT classes.code, classes.semester, subjects.name, classes.id
+                           FROM classes LEFT JOIN subjects ON classes.subject = subjects.id
+                           WHERE classes.id = {}'''.format(class_id[0])
+                classes = Sqlite.db_conn.cursor.execute(query).fetchall()
+                for turma in classes:
+                    turma = [str(x) for x in turma]
+                    str_id = str(row[0]) + "-" + str(class_id[0])
+                    turma = turma[0:1] + [' - '.join(turma[1:])]
+                    self.tree.appendItem(turma, pos=row[0], iid=str_id)
 
     def _selecionar_aluno(self, items):
         # print(items)    #   debug
-        if len(items) > 1:
+        if (len(items) > 1) or self.tree.parent(items[0]['iid']):
             self._set_aluno(('', ''))
             return
-        # get selected item ids to check if there's more than one parent selected
-
-        #item_iid = items[ix]['iid']
-        # check if it's a root item or a child one
-        #parent_iid = self.tree.parent(item_iid)
-        # always fill in registry form with root data == student data
-        #if parent_iid:
-            #items = self.tree.item(parent_iid)
         self._set_aluno((items[0]['text'], items[0]['values'][0]))
 
     def _set_aluno(self, tupla):
