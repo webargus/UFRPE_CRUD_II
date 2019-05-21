@@ -48,7 +48,8 @@ class PainelAlunos:
         self.tree.on_mouse_right(self._popup)
 
         self.popup_menu = Menu(frame, tearoff=0, bd=4)
-        self.popup_menu.add_command(label="Adicionar", command=self._set_alunos_turma)
+        self.popup_menu.add_command(label="Matricular aluno(s)", command=self._set_alunos_turma)
+        self.popup_menu.add_command(label="Cancelar matrícula(s)", command=self._cancelar_matriculas)
 
         self.listar_alunos()
 
@@ -61,20 +62,42 @@ class PainelAlunos:
         finally:
             self.popup_menu.grab_release()
 
-    def _set_alunos_turma(self):
+    def _cancelar_matriculas(self):
         sel = self.tree.get_selection()
-        ids = [s['iid'] for s in sel]
+
+
+    def _set_alunos_turma(self):
+        # get selected parents only (students, though)
+        sel = self.tree.get_selection()
+        # sift through parents for student ids
+        ids = [s['iid'] for s in sel if not self.tree.parent(s['iid'])]
+        # call turma module 'set_alunos' method to assign students to classes
+        # (eventually) selected in 'turmas' panel tree view;
+        # the turma.set_alunos method returns ids of classes assigned to students
         turma_ids = self.turmas.set_alunos(ids)
-        query = '''SELECT classes.code, classes.semester, subjects.name  
+        query = '''SELECT classes.code, classes.semester, subjects.name, classes.id
                    FROM classes LEFT JOIN subjects ON classes.subject = subjects.id
                    WHERE classes.id IN (''' + ', '.join(turma_ids) + ")"
         Sqlite.db_conn.cursor.execute(query)
         turmas = Sqlite.db_conn.cursor.fetchall()
         for iid in ids:
             for turma in turmas:
-                # self.tree.insert(iid, 'end', None, text=turma)
-                turma = list(turma[0:1]) + [' - '.join(list(turma[1:]))]
-                self.tree.appendItem(turma, pos=iid)
+                turma = list(turma)
+                class_id = turma.pop()
+                # assign child id to unique string id;
+                # string id = parent id = student PK (iid) + hyphen + class primary key (class_id)
+                str_id = str(iid) + "-" + str(class_id)
+                if self._checa_turma(iid, str_id):
+                    continue
+                turma = turma[0:1] + [' - '.join(turma[1:])]
+                self.tree.appendItem(turma, pos=iid, iid=str_id)
+
+    def _checa_turma(self, id_aluno, str_id):
+        turmas_aluno = self.tree.get_children(id_aluno)
+        for turma in turmas_aluno:
+            if turma == str_id:
+                return True
+        return False
 
     def _salvar_aluno(self):
         # valida entrada do aluno e retorna se inválida
@@ -118,12 +141,23 @@ class PainelAlunos:
         query = "SELECT * FROM students ORDER BY name"
         for row in Sqlite.db_conn.cursor.execute(query):
             self.tree.appendItem(row[1:], iid=row[0])
+            query = '''SELECT classes.code, classes.semester, subjects.name, classes.id
+                       FROM classes LEFT JOIN subjects ON classes.subject = subjects.id
+                       WHERE classes.id '''
 
     def _selecionar_aluno(self, items):
-        #   print(items)    #   debug
+        # print(items)    #   debug
         if len(items) > 1:
             self._set_aluno(('', ''))
             return
+        # get selected item ids to check if there's more than one parent selected
+
+        #item_iid = items[ix]['iid']
+        # check if it's a root item or a child one
+        #parent_iid = self.tree.parent(item_iid)
+        # always fill in registry form with root data == student data
+        #if parent_iid:
+            #items = self.tree.item(parent_iid)
         self._set_aluno((items[0]['text'], items[0]['values'][0]))
 
     def _set_aluno(self, tupla):

@@ -212,20 +212,32 @@ class Turmas:
         return {'codigo': codigo, 'periodo': periodo, 'disciplina': disciplina, 'id': iid}
 
     def set_alunos(self, ids):
+        # get selected classes from tree view
         sel = self.tree.get_selection()
+        # create list to accumulate ids of classes assigned to students in param ids
         turma_ids = []
+        # cast ids of students to integers, for we'll need it further on to compare vars of same type
+        ids = [int(x) for x in ids]
+        # loop over classes selected in tree view
         for turma in sel:
+            # append class id to return list
             turma_ids.append(turma['iid'])
+            # get ids of students already assigned to class
             query = '''SELECT student_id FROM class_students WHERE class_id = {}'''.format(turma['iid'])
             Sqlite.db_conn.cursor.execute(query)
             res = Sqlite.db_conn.cursor.fetchall()
+            res = [y for x in res for y in x]
+            # loop over student ids to include them into sqlite binding table between classes and students
             for iid in ids:
+                # skip student id enrollment into class if id already included before
                 if iid in res:
                     continue
+                # save class + student pair into enrollment table 'class_students'
                 query = '''INSERT INTO class_students (class_id, student_id)
                            VALUES({}, {})'''.format(turma['iid'], iid)
                 Sqlite.db_conn.cursor.execute(query)
-        return turma_ids
+                Sqlite.db_conn.conn.commit()
+        return turma_ids    # return ids of classes selected in tree view
 
 
 class ProfessorListbox(Listbox):
