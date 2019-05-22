@@ -75,29 +75,27 @@ class PainelAlunos:
         # (eventually) selected in 'turmas' panel tree view;
         # the turma.set_alunos method returns ids of classes assigned to students
         turma_ids = self.turmas.set_alunos(ids)
-        query = '''SELECT classes.code, classes.semester, subjects.name, classes.id
+        query = '''SELECT classes.code, subjects.code, subjects.name, classes.semester, classes.id
                    FROM classes LEFT JOIN subjects ON classes.subject = subjects.id
-                   WHERE classes.id IN (''' + ', '.join(turma_ids) + ")"
+                   WHERE classes.id IN ({})'''.format(', '.join(turma_ids))
         Sqlite.db_conn.cursor.execute(query)
         turmas = Sqlite.db_conn.cursor.fetchall()
+        # loop over student ids (iid) seeking to append tree view branch with their classes
         for iid in ids:
             for turma in turmas:
                 turma = list(turma)
                 class_id = turma.pop()
+                semester = turma.pop()
+                semester_id = str(iid) + "." + semester
+                if not self.tree.exists(semester_id):
+                    self.tree.appendItem([semester], pos=iid, iid=semester_id)
                 # assign unique string id to child id;
                 # string id = parent id = student PK (iid) + hyphen + class primary key (class_id)
                 str_id = str(iid) + "-" + str(class_id)
-                if self._checa_turma(iid, str_id):
+                if self.tree.exists(str_id):
                     continue
                 turma = turma[0:1] + [' - '.join(turma[1:])]
-                self.tree.appendItem(turma, pos=iid, iid=str_id)
-
-    def _checa_turma(self, id_aluno, str_id):
-        turmas_aluno = self.tree.get_children(id_aluno)
-        for turma in turmas_aluno:
-            if turma == str_id:
-                return True
-        return False
+                self.tree.appendItem(turma, pos=semester_id, iid=str_id)
 
     def _salvar_aluno(self):
         # valida entrada do aluno e retorna se inválida
@@ -143,20 +141,26 @@ class PainelAlunos:
         for row in students:
             self.tree.appendItem(row[1:], iid=row[0])
             # get ids of classes in which student is enrolled
+            # REM: do left join just to make sure we retrieve classes sorted by semester in ascending order
             query = '''SELECT class_students.class_id FROM class_students
-                       WHERE student_id = {}'''.format(row[0])
+                       LEFT JOIN classes ON class_students.class_id = classes.id
+                       WHERE student_id = {} ORDER BY classes.semester ASC'''.format(row[0])
             student_classes = Sqlite.db_conn.cursor.execute(query).fetchall()
             for class_id in student_classes:
-
-                query = '''SELECT classes.code, classes.semester, subjects.name, classes.id
+                # get class details
+                query = '''SELECT classes.code, subjects.code, subjects.name, classes.semester
                            FROM classes LEFT JOIN subjects ON classes.subject = subjects.id
                            WHERE classes.id = {}'''.format(class_id[0])
                 classes = Sqlite.db_conn.cursor.execute(query).fetchall()
                 for turma in classes:
                     turma = [str(x) for x in turma]
+                    semester = turma.pop()
+                    semester_id = str(row[0]) + "." + semester
+                    if not self.tree.exists(semester_id):
+                        self.tree.appendItem([semester], pos=row[0], iid=semester_id)
                     str_id = str(row[0]) + "-" + str(class_id[0])
                     turma = turma[0:1] + [' - '.join(turma[1:])]
-                    self.tree.appendItem(turma, pos=row[0], iid=str_id)
+                    self.tree.appendItem(turma, pos=semester_id, iid=str_id)
 
     def _selecionar_aluno(self, items):
         # print(items)    #   debug
