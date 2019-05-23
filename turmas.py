@@ -92,7 +92,7 @@ class Turmas:
         # define callback to call after self._salvar_turma();
         # this is patch callback to professores module,
         # mend to allow it to update its tree view listing
-        self.after_save_class = None
+        self.callbacks = []
 
         self.listar_turmas()
 
@@ -184,12 +184,16 @@ class Turmas:
             Sqlite.db_conn.cursor.execute(query, prof_id)
         # commit db transaction
         Sqlite.db_conn.conn.commit()
-        if self.after_save_class is not None:
-            self.after_save_class()
+        self._call_refresh_callbacks()
         self.listar_turmas()
+
+    def _call_refresh_callbacks(self):
+        for cb in self.callbacks:
+            cb()
 
     def listar_turmas(self):
         sel = self.tree.get_selection()
+        # save selection to re-select them again after refreshing tree view
         items = []
         if len(sel) > 0:
             items = [x['iid'] for x in sel]
@@ -200,7 +204,8 @@ class Turmas:
                    ON classes.subject = subjects.id ORDER BY classes.semester ASC'''
         for row in Sqlite.db_conn.cursor.execute(query):
             self.tree.appendItem(row[1:], iid=row[0])
-
+        # filter out non existent saved selected items in case we deleted a few items from tree view
+        items = [x for x in items if self.tree.exists(x)]
         self.tree.selection_set(items)
 
     def _validar_turma(self):
@@ -275,7 +280,19 @@ class Turmas:
             s += ' - '.join([str(y) for y in line['values']]) + "\n"
         if not tools.aviso_cancelar_ok(s + "\nTem certeza de que quer excluir essa(s) turma(s)?"):
             return
+        turmas = ', '.join([x['iid'] for x in sel])
+        query = "DELETE FROM classes WHERE id IN ({})".format(turmas)
+        Sqlite.db_conn.cursor.execute(query)
+        query = "DELETE FROM class_professors WHERE class_id IN ({})".format(turmas)
+        Sqlite.db_conn.cursor.execute(query)
+        query = "DELETE FROM class_students WHERE class_id IN ({})".format(turmas)
+        Sqlite.db_conn.cursor.execute(query)
+        self._call_refresh_callbacks()
+        self.listar_turmas()
+        Sqlite.db_conn.conn.commit()
 
+    def append_callback(self, cb):
+        self.callbacks.append(cb)
 
 
 class ProfessorListbox(Listbox):

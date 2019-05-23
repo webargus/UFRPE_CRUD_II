@@ -21,7 +21,7 @@ class PainelAlunos:
         fAluno.grid_columnconfigure(1, weight=1)    # expande formulário na horizontal até bordas da janela
         Label(fAluno, {"text": "Nome:"}).grid({"row": 0, "column": 0})
         self.nome = StringVar()
-        Entry(fAluno, {"textvariable": self.nome}).grid({"row": 0, "column": 1, "columnspan": 3, "sticky": (W, E)})
+        Entry(fAluno, {"textvariable": self.nome}).grid({"row": 0, "column": 1, "columnspan": 2, "sticky": (W, E)})
         Label(fAluno, {"text": "CPF:"}).grid({"row": 1, "column": 0, "sticky": W})
         self.cpf = StringVar()
         Entry(fAluno, {"textvariable": self.cpf}).grid({"row": 1, "column": 1, "sticky": W})
@@ -32,12 +32,12 @@ class PainelAlunos:
                   "command": self._salvar_aluno
                   }
         Button(fAluno, params).grid({"row": 1, "column": 2, "pady": 8})
-        params = {"text": "Excluir",
+        '''params = {"text": "Excluir",
                   "width": 70,
                   "image": tools.StaticImages.del16,
                   "compound": "left"
                   }
-        Button(fAluno, params).grid({"row": 1, "column": 3, "pady": 8, "padx": 8})
+        Button(fAluno, params).grid({"row": 1, "column": 3, "pady": 8, "padx": 8})'''
 
         fTreeview = Frame(frame, {"relief": SUNKEN})
         fTreeview.grid_columnconfigure(0, weight=1)
@@ -50,7 +50,9 @@ class PainelAlunos:
         self.popup_menu = Menu(frame, tearoff=0, bd=4)
         self.popup_menu.add_command(label="Matricular aluno(s)", command=self._set_alunos_turma)
         self.popup_menu.add_command(label="Cancelar matrícula(s)", command=self._cancelar_matriculas)
+        self.popup_menu.add_command(label="Excluir aluno(s)", command=self._excluir_alunos)
 
+        self.turmas.append_callback(self.listar_alunos)
         self.listar_alunos()
 
     def _popup(self, event):
@@ -61,6 +63,24 @@ class PainelAlunos:
             self.popup_menu.tk_popup(event.x_root, event.y_root, 0)
         finally:
             self.popup_menu.grab_release()
+
+    def _excluir_alunos(self):
+        sel = self.tree.get_selection()
+        # get only selected students
+        sel = [x for x in sel if not self.tree.parent(x['iid'])]
+        print("sel=", sel)
+        s = ""
+        for aluno in sel:
+            s += aluno['text'] + ' - ' + ' - '.join([str(y) for y in aluno['values']]) + "\n"
+        if not tools.aviso_cancelar_ok(s + "\nConfirma a exclusão desse(s) aluno(s)?"):
+            return
+        sel = ', '.join([x['iid'] for x in sel])
+        query = '''DELETE FROM students WHERE id IN ({})'''.format(sel)
+        Sqlite.db_conn.cursor.execute(query)
+        query = '''DELETE FROM class_students WHERE student_id IN ({})'''.format(sel)
+        Sqlite.db_conn.cursor.execute(query)
+        Sqlite.db_conn.conn.commit()
+        self.listar_alunos()
 
     def _cancelar_matriculas(self):
         # get selected classes only

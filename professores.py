@@ -55,6 +55,8 @@ class PainelProfessores:
         self.popup_menu = Menu(frame, tearoff=0, bd=4)
         self.popup_menu.add_command(label="Adicionar", command=self._set_prof_turma)
 
+        self.turmas.append_callback(self.listar_professores)
+
         self.listar_professores()
 
     def _popup(self, event):
