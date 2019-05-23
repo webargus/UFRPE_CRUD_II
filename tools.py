@@ -88,7 +88,8 @@ def aviso_erro(erros):
     msg = "Favor verificar:\n"
     messagebox.showwarning("...Êpa!!", (msg + "\n".join(erros)))
 
-
+def aviso_cancelar_ok(msg):
+    return messagebox.askokcancel("Atenção!!", msg)
 
 
 

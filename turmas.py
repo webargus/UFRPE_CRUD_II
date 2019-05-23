@@ -2,7 +2,6 @@ from tkinter import *
 import treeviewtable as tv
 import tools
 from sqltools import Sqlite
-import professores
 
 
 class Turmas:
@@ -43,7 +42,7 @@ class Turmas:
         # config = {"relief": SUNKEN, "textvariable": self.discip}
         # method PainelDisciplinas._set_discip_turma calls self.set_disciplina to set this label text
         self.discip = DisciplinaLabel(ftop)
-        self.discip.grid({"row": 0, "column": 5, "columnspan": 4, "sticky": EW})
+        self.discip.grid({"row": 0, "column": 5, "columnspan": 3, "sticky": EW})
 
         # professors' frame
         fprofs = LabelFrame(ftop, {"pady": 4, "padx": 4, "text": " Professor(es) "})
@@ -67,12 +66,13 @@ class Turmas:
                   "command": self._salvar_turma
                   }
         Button(ftop, config).grid({"row": 1, "column": 7, "padx": 4})
-        config = {"text": "Excluir",
+        '''config = {"text": "Excluir",
                   "width": 70,
                   "image": tools.StaticImages.del16,
-                  "compound": "left"
+                  "compound": "left",
+                  "command": self._excluir_turma
                   }
-        Button(ftop, config).grid({"row": 1, "column": 8})
+        Button(ftop, config).grid({"row": 1, "column": 8})'''
 
         # create frame to insert treeview
         fbottom = Frame(frame)
@@ -84,6 +84,10 @@ class Turmas:
 
         self.tree = tv.TreeViewTable(fbottom, {"Código": 50, "Período": 100, "Código Disciplina": 70, "Disciplina": 300})
         self.tree.on_select(self._selecionar_turma)
+        self.tree.on_mouse_right(self._popup)
+
+        self.popup_menu = Menu(fbottom, tearoff=0, bd=4)
+        self.popup_menu.add_command(label="Excluir turma(s)", command=self._excluir_turma)
 
         # define callback to call after self._salvar_turma();
         # this is patch callback to professores module,
@@ -91,6 +95,15 @@ class Turmas:
         self.after_save_class = None
 
         self.listar_turmas()
+
+    def _popup(self, event):
+        sel = len(self.tree.get_selection())
+        if sel == 0:
+            return
+        try:
+            self.popup_menu.tk_popup(event.x_root, event.y_root, 0)
+        finally:
+            self.popup_menu.grab_release()
 
     def set_disciplina(self, discip):
         #   print(discip)   #   debug
@@ -130,7 +143,6 @@ class Turmas:
             params.append({'id': str(prof[0]), 'cpf': prof[1], 'nome': prof[2], 'depto': prof[3]})
         self.listbox.clear()
         self.listbox.append(params)
-
 
     def _nova_turma(self):
         self._limpa_formulario_cadastro()
@@ -254,6 +266,16 @@ class Turmas:
         for iid in ids:
             Sqlite.db_conn.cursor.execute(query.format(iid[1], iid[0]))
         Sqlite.db_conn.conn.commit()
+
+    def _excluir_turma(self):
+        sel = self.tree.get_selection()
+        print("sel=", sel)
+        s = ""
+        for line in sel:
+            s += ' - '.join([str(y) for y in line['values']]) + "\n"
+        if not tools.aviso_cancelar_ok(s + "\nTem certeza de que quer excluir essa(s) turma(s)?"):
+            return
+
 
 
 class ProfessorListbox(Listbox):
