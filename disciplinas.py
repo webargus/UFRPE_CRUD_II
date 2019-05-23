@@ -24,12 +24,16 @@ class PainelDisciplinas:
         fDiscip.grid_columnconfigure(1, weight=1)    # expande formulário na horizontal até bordas do frame
         Label(fDiscip, {"text": "Disciplina:"}).grid({"row": 0, "column": 0})
         self.nome = StringVar()
-        Entry(fDiscip, {"textvariable": self.nome}).grid({"row": 0, "column": 1, "columnspan": 3, "sticky": EW})
+        Entry(fDiscip, {"textvariable": self.nome}).grid({"row": 0, "column": 1, "columnspan": 2, "sticky": EW})
         Label(fDiscip, {"text": "Código:"}).grid({"row": 1, "column": 0, "sticky": W})
         self.codigo = StringVar()
         Entry(fDiscip, {"textvariable": self.codigo}).grid({"row": 1, "column": 1, "sticky": W})
-        Button(fDiscip, {"text": "Ok", "width": 70, "image": tools.StaticImages.tick16, "compound": "left", "command": self._salvar_disciplina}).grid({"row": 1, "column": 2, "pady": 8})
-        Button(fDiscip, {"text": "Excluir", "width": 70, "image": tools.StaticImages.del16, "compound": "left"}).grid({"row": 1, "column": 3, "pady": 8, "padx": 8})
+        Button(fDiscip, {"text": "Ok",
+                         "width": 70,
+                         "image": tools.StaticImages.tick16,
+                         "compound": "left",
+                         "command": self._salvar_disciplina}).grid({"row": 1, "column": 2, "pady": 8})
+        # Button(fDiscip, {"text": "Excluir", "width": 70, "image": tools.StaticImages.del16, "compound": "left"}).grid({"row": 1, "column": 3, "pady": 8, "padx": 8})
 
         fTreeview = Frame(frame, {"relief": SUNKEN})
         fTreeview.grid_columnconfigure(0, weight=1)
@@ -40,16 +44,38 @@ class PainelDisciplinas:
         self.tree.on_mouse_right(self._popup)
 
         self.popup_menu = Menu(frame, tearoff=0, bd=4)
-        self.popup_menu.add_command(label="Adicionar", command=self._set_discip_turma)
+        self.popup_menu.add_command(label="Incluir em cadastro de turma", command=self._set_discip_turma)
+        self.popup_menu.add_command(label="Excluir disciplina", command=self._excluir_disciplina)
 
     def _popup(self, event):
-        sel = len(self.tree.get_selection())
-        if sel == 0 or sel > 1:
+
+        if len(self.tree.get_selection()) == 0:
             return
         try:
             self.popup_menu.tk_popup(event.x_root, event.y_root, 0)
         finally:
             self.popup_menu.grab_release()
+
+    def _excluir_disciplina(self):
+        sel = self.tree.get_selection()
+        s = ""
+        for subject in sel:
+            s += subject['text'] + ' - ' + ' - '.join([str(y) for y in subject['values']]) + "\n"
+        if not tools.aviso_cancelar_ok(s + "\nConfirma a exclusão dessa(s) disciplina(s)?"):
+            return
+        ids = [x['iid'] for x in sel]
+        # check if subjects linked to any class
+        query = '''SELECT COUNT(*) FROM classes WHERE subject IN ({})'''.format(', '.join(ids))
+        Sqlite.db_conn.cursor.execute(query)
+        if Sqlite.db_conn.cursor.fetchone()[0] > 0:
+            tools.aviso_erro(["Há disciplina(s) vinculada(s) a turma(s)\nExclua primeiro a(s) turma(s) e tente novamente."])
+            return
+        for iid in ids:
+            self.turmas.discip.clear(iid=iid)
+        query = "DELETE FROM subjects WHERE id IN ({})".format(', '.join(ids))
+        Sqlite.db_conn.cursor.execute(query)
+        Sqlite.db_conn.conn.commit()
+        self.listar_disciplinas()
 
     def _set_discip_turma(self):
         sel = self.tree.get_selection()
@@ -65,7 +91,6 @@ class PainelDisciplinas:
         query = "SELECT * FROM subjects WHERE code = '%s'" % (v[0])
         Sqlite.db_conn.cursor.execute(query)
         res = Sqlite.db_conn.cursor.fetchone()
-        print(res)
         if res is None:     # code not found in db => operation is of type INSERT
             query = "INSERT INTO subjects (code, name) VALUES('%s', '%s')" % (v[0], v[1])
         else:               # code already exists in db => operation is of type UPDATE

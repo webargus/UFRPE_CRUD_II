@@ -274,7 +274,6 @@ class Turmas:
 
     def _excluir_turma(self):
         sel = self.tree.get_selection()
-        print("sel=", sel)
         s = ""
         for line in sel:
             s += ' - '.join([str(y) for y in line['values']]) + "\n"
@@ -368,9 +367,12 @@ class DisciplinaLabel(Label):
             return None
         return self.discip['id']
 
-    def clear(self):
-        self.label.set('')
-        self.discip = None
+    def clear(self, iid=None):
+        if self.discip is None:
+            return
+        if (iid is None) or (iid == self.discip['id']):
+            self.label.set('')
+            self.discip = None
 
 
 
