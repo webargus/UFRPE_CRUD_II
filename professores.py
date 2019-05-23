@@ -23,7 +23,7 @@ class PainelProfessores:
         fProf.grid_columnconfigure(4, weight=1)    # expande formulário na horizontal até bordas da janela
         Label(fProf, {"text": "Nome:"}).grid({"row": 0, "column": 0})
         self.nome = StringVar()
-        Entry(fProf, {"textvariable": self.nome}).grid({"row": 0, "column": 1, "columnspan": 5, "sticky": (W, E)})
+        Entry(fProf, {"textvariable": self.nome}).grid({"row": 0, "column": 1, "columnspan": 4, "sticky": (W, E)})
         Label(fProf, {"text": "CPF:"}).grid({"row": 1, "column": 0, "sticky": W})
         self.cpf = StringVar()
         Entry(fProf, {"textvariable": self.cpf}).grid({"row": 1, "column": 1, "sticky": W})
@@ -37,12 +37,12 @@ class PainelProfessores:
                   "command": self._salvar_professor
                   }
         Button(fProf, params).grid({"row": 1, "column": 4, "padx": 4, "pady": 8, "sticky": E})
-        params = {"text": "Excluir",
+        '''params = {"text": "Excluir",
                   "width": 70,
                   "image": tools.StaticImages.del16,
                   "compound": "left"
                   }
-        Button(fProf, params).grid({"row": 1, "column": 5, "pady": 8, "sticky": E})
+        Button(fProf, params).grid({"row": 1, "column": 5, "pady": 8, "sticky": E})'''
 
         fTreeview = Frame(frame, {"relief": SUNKEN})
         fTreeview.grid_columnconfigure(0, weight=1)
@@ -53,7 +53,8 @@ class PainelProfessores:
         self.tree.on_mouse_right(self._popup)
 
         self.popup_menu = Menu(frame, tearoff=0, bd=4)
-        self.popup_menu.add_command(label="Adicionar", command=self._set_prof_turma)
+        self.popup_menu.add_command(label="Atribuir turma(s) selecionada(s)", command=self._set_prof_turma)
+        self.popup_menu.add_command(label='Excluir professor(es)', command=self._excluir_professores)
 
         self.turmas.append_callback(self.listar_professores)
 
@@ -67,6 +68,26 @@ class PainelProfessores:
             self.popup_menu.tk_popup(event.x_root, event.y_root, 0)
         finally:
             self.popup_menu.grab_release()
+
+    def _excluir_professores(self):
+        sel = self.tree.get_selection()
+        # wipe out non root items from selection, keep only root ones == professors
+        sel = [x for x in sel if not self.tree.parent(x['iid'])]
+        if len(sel) == 0:
+            return
+        s = ""
+        for professor in sel:
+            s += professor['text'] + ' - ' + ' - '.join([str(y) for y in professor['values']]) + "\n"
+        if not tools.aviso_cancelar_ok(s + "\nConfirma a exclusão desse(s) professor(es)?"):
+            return
+        sel = ', '.join([x['iid'] for x in sel])
+        query = "DELETE FROM professors WHERE id IN({})".format(sel)
+        Sqlite.db_conn.cursor.execute(query)
+        query = "DELETE FROM class_professors WHERE professor_id IN ({})".format(sel)
+        Sqlite.db_conn.cursor.execute(query)
+        Sqlite.db_conn.conn.commit()
+        self.listar_professores()
+        self.turmas.listar_turmas()
 
     def _set_prof_turma(self):
         sel = self.tree.get_selection()

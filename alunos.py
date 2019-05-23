@@ -68,7 +68,8 @@ class PainelAlunos:
         sel = self.tree.get_selection()
         # get only selected students
         sel = [x for x in sel if not self.tree.parent(x['iid'])]
-        print("sel=", sel)
+        if len(sel) == 0:
+            return
         s = ""
         for aluno in sel:
             s += aluno['text'] + ' - ' + ' - '.join([str(y) for y in aluno['values']]) + "\n"
