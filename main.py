@@ -48,7 +48,8 @@ class Gui(Frame):
 
         pdiscip = disciplinas.PainelDisciplinas(f1, self.turmas)
         pdiscip.listar_disciplinas()
-        professores.PainelProfessores(f2, self.turmas)
+        prof_panel = professores.PainelProfessores(f2, self.turmas)
+        self.turmas.after_save_class = prof_panel.listar_professores
         alunos.PainelAlunos(f3, self.turmas)
 
         # login.LoginDialog(self)

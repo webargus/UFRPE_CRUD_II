@@ -63,8 +63,22 @@ class PainelAlunos:
             self.popup_menu.grab_release()
 
     def _cancelar_matriculas(self):
+        # get selected classes only
         sel = self.tree.get_selection()
-
+        # get ids for which there are no children == ids of classes,
+        # and delete them from tree view
+        sel = [x['iid'] for x in sel if len(self.tree.get_children(x['iid'])) == 0]
+        for id in sel:
+            self.tree.delete(id)
+        # wipe out childless branches from tree view
+        childless = [y for x in self.tree.get_children() for y in self.tree.get_children(x) if len(self.tree.get_children(y)) == 0]
+        # print("childless=", childless)    # debug
+        for child in childless:
+            self.tree.delete(child)
+        # and split them into sublists where pos = 0 corresponds to student id and
+        # pos = 1 corresponds to class id
+        sel = [x.split('-') for x in sel]
+        self.turmas.remover_matriculas(sel)
 
     def _set_alunos_turma(self):
         # get selected parents only (students, though)

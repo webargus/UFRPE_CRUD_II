@@ -58,8 +58,8 @@ class PainelProfessores:
         self.listar_professores()
 
     def _popup(self, event):
-        sel = len(self.tree.get_selection())
-        if sel == 0:
+        sel = self.tree.get_selection()
+        if len(sel) == 0:
             return
         try:
             self.popup_menu.tk_popup(event.x_root, event.y_root, 0)
@@ -70,6 +70,8 @@ class PainelProfessores:
         sel = self.tree.get_selection()
         param = []
         for s in sel:
+            if self.tree.parent(s['iid']):
+                continue
             param.append({'id': s['iid'],
                           'cpf': s['text'],
                           'nome': s['values'][0],
@@ -120,12 +122,39 @@ class PainelProfessores:
     def listar_professores(self):
         self.tree.clear()     # clear tree view
         query = "SELECT * FROM professors ORDER BY name"
-        for row in Sqlite.db_conn.cursor.execute(query):
+        query1 = '''SELECT classes.code, subjects.code, subjects.name, semester, class_id FROM class_professors
+                    LEFT JOIN classes ON class_id = classes.id
+                    LEFT JOIN subjects ON subjects.id = classes.subject
+                    WHERE professor_id = {}
+                    ORDER BY semester, subjects.name ASC'''
+        Sqlite.db_conn.cursor.execute(query)
+        profs = Sqlite.db_conn.cursor.fetchall()
+        for row in profs:
+            # append professor to tree view
             self.tree.appendItem(row[1:], iid=row[0])
+            # query for professor classes from db
+            Sqlite.db_conn.cursor.execute(query1.format(row[0]))
+            turmas = Sqlite.db_conn.cursor.fetchall()
+            for turma in turmas:
+                turma = list(turma)
+                turma = [str(x) for x in turma]
+                class_id = turma.pop()
+                semester = turma.pop()
+                semester_id = str(row[0]) + "." + semester
+                if not self.tree.exists(semester_id):
+                    self.tree.appendItem([semester], pos=row[0], iid=semester_id)
+                # assign unique string id to child id;
+                # string id = parent id = professor PK (iid) + hyphen + class primary key (class_id)
+                str_id = str(row[0]) + "-" + str(class_id)
+                if self.tree.exists(str_id):
+                    continue
+                # print("turma=", turma)    # debug
+                turma = turma[0:1] + [' - '.join(turma[1:])]
+                self.tree.appendItem(turma, pos=semester_id, iid=str_id)
 
     def _selecionar_professor(self, items):
         #   print(items)    #   debug
-        if len(items) > 1:
+        if (len(items) > 1) or self.tree.parent(items[0]['iid']):
             self._set_professor(('', '', ''))
             return
         self._set_professor((items[0]['text'], items[0]['values'][0], items[0]['values'][1]))

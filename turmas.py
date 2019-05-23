@@ -2,6 +2,7 @@ from tkinter import *
 import treeviewtable as tv
 import tools
 from sqltools import Sqlite
+import professores
 
 
 class Turmas:
@@ -84,6 +85,11 @@ class Turmas:
         self.tree = tv.TreeViewTable(fbottom, {"Código": 50, "Período": 100, "Código Disciplina": 70, "Disciplina": 300})
         self.tree.on_select(self._selecionar_turma)
 
+        # define callback to call after self._salvar_turma();
+        # this is patch callback to professores module,
+        # mend to allow it to update its tree view listing
+        self.after_save_class = None
+
         self.listar_turmas()
 
     def set_disciplina(self, discip):
@@ -140,7 +146,7 @@ class Turmas:
         turma = self._validar_turma()
         if turma is None:
             return
-        print(turma)        # debug
+        # print(turma)        # debug
         if turma['id'] is None:       # insertion operation
             query = '''INSERT INTO classes ('code', 'semester', 'subject')
                        VALUES('{}', '{}', {})
@@ -166,6 +172,8 @@ class Turmas:
             Sqlite.db_conn.cursor.execute(query, prof_id)
         # commit db transaction
         Sqlite.db_conn.conn.commit()
+        if self.after_save_class is not None:
+            self.after_save_class()
         self.listar_turmas()
 
     def listar_turmas(self):
@@ -238,6 +246,14 @@ class Turmas:
                 Sqlite.db_conn.cursor.execute(query)
                 Sqlite.db_conn.conn.commit()
         return turma_ids    # return ids of classes selected in tree view
+
+    def remover_matriculas(self, ids):
+        # print("ids=", ids)      # debug
+        # ids format: [[id_student, id_subject], ...]
+        query = "DELETE FROM class_students WHERE class_id = {} AND student_id = {}"
+        for iid in ids:
+            Sqlite.db_conn.cursor.execute(query.format(iid[1], iid[0]))
+        Sqlite.db_conn.conn.commit()
 
 
 class ProfessorListbox(Listbox):
