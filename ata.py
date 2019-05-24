@@ -1,7 +1,7 @@
 
 from tkinter import *
 import tools
-import treeviewtable as tv
+import labeltable as table
 
 
 class Ata(Toplevel):
@@ -10,7 +10,7 @@ class Ata(Toplevel):
         Toplevel.__init__(self, parent.master)
         self.parent = parent
         self.iconbitmap(tools.icon32)
-        self.config({"width": 800, "height": 600})
+        self.config({"width": 800, "height": 500})
         self.resizable(False, False)
         tools.center_window(self)
 
@@ -33,8 +33,12 @@ class Ata(Toplevel):
         bottomF.grid({"row": 1, "column": 0, "sticky": NSEW})
         bottomF.grid_rowconfigure(0, weight=1)
         bottomF.grid_columnconfigure(0, weight=1)
-        self.tree = tv.TreeViewTable(bottomF, {"Código": 50, "Período": 100, "Código Disciplina": 70, "Disciplina": 300})
-
+        headers = {"ORD": (5, "center"),
+                   "Nota": (8, "center"),
+                   "Nome do(a) aluno(a)": (48, "w"),
+                   "Assinatura": (48, "center")}
+        self.table = table.LabelTable(self, headers)
+        self.table.cell_config(0, 2, {"anchor": "center"})
 
         parent.master.wm_attributes("-disabled", True)
         self.after(500, lambda: self.focus_force())

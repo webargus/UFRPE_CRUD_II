@@ -52,7 +52,7 @@ class Gui(Frame):
         self.turmas.append_callback(prof_panel.listar_professores)
         alunos.PainelAlunos(f3, self.turmas)
 
-        login.LoginDialog(self)
+        # login.LoginDialog(self)
         self.mainloop()
 
 
