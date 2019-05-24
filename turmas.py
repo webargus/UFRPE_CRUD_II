@@ -2,6 +2,7 @@ from tkinter import *
 import treeviewtable as tv
 import tools
 from sqltools import Sqlite
+import ata
 
 
 class Turmas:
@@ -13,6 +14,7 @@ class Turmas:
         # the top row gets the class edit/create form,
         # while the one below it gets the 'turmas' treeview;
         # the bottom row expands up and down taking up all vertical space available
+        self.parent = parent
         frame = Frame(parent)
         frame.grid_columnconfigure(0, weight=1)
         frame.grid_rowconfigure(0, weight=0)
@@ -66,13 +68,6 @@ class Turmas:
                   "command": self._salvar_turma
                   }
         Button(ftop, config).grid({"row": 1, "column": 7, "padx": 4})
-        '''config = {"text": "Excluir",
-                  "width": 70,
-                  "image": tools.StaticImages.del16,
-                  "compound": "left",
-                  "command": self._excluir_turma
-                  }
-        Button(ftop, config).grid({"row": 1, "column": 8})'''
 
         # create frame to insert treeview
         fbottom = Frame(frame)
@@ -88,6 +83,7 @@ class Turmas:
 
         self.popup_menu = Menu(fbottom, tearoff=0, bd=4)
         self.popup_menu.add_command(label="Excluir turma(s)", command=self._excluir_turma)
+        self.popup_menu.add_command(label="Gerar ata", command=self._gerar_ata)
 
         # define callback to call after self._salvar_turma();
         # this is patch callback to professores module,
@@ -293,6 +289,10 @@ class Turmas:
     def append_callback(self, cb):
         self.callbacks.append(cb)
 
+    def _gerar_ata(self):
+        sel = self.tree.get_selection()
+        a = ata.Ata(self.parent.master)
+        self.parent.wait_window(a)
 
 class ProfessorListbox(Listbox):
 

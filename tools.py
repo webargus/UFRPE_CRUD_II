@@ -10,14 +10,13 @@ periodo_pattern = r"^\d{4}\.\d{1}$"     # expressão regular para validar perío
 img_path = "C:\\Users\\Edson\\PycharmProjects\\UFRPE_CRUD_II\\img\\"
 icon32 = img_path + "brasao32.ico"
 tick16 = img_path+"tick.png"
-delete16 = img_path + "delete16.png"
 new16 = img_path + "plus16.png"
+
 
 class StaticImages:
 
     def __init__(self):
         StaticImages.tick16 = tkinter.PhotoImage(file=tick16)
-        StaticImages.del16 = tkinter.PhotoImage(file=delete16)
         StaticImages.new16 = tkinter.PhotoImage(file=new16)
 
 

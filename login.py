@@ -7,6 +7,7 @@ class LoginDialog(Toplevel):
 
     def __init__(self, parent):
         Toplevel.__init__(self, parent.master, {"bg": "yellow"})
+        self.iconbitmap(tools.icon32)
         self.parent = parent
         self.config({"width": 300, "height": 200})
         self.resizable(False, False)

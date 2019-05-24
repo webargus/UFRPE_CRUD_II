@@ -1,20 +1,6 @@
 import tkinter as tk
 
 
-class ExampleApp(tk.Tk):
-    def __init__(self):
-        tk.Tk.__init__(self)
-        headers = {"ORD": (5, "center"),
-                   "Nota": (8, "center"),
-                   "Nome do(a) aluno(a)": (40, "w"),
-                   "Assinatura": (40, "center")}
-        t = LabelTable(self, headers)
-        t.pack(side="top", fill="x")
-        t.cell_config(0, 2, {"anchor": "center"})
-        t.insert([1, ' ', 'Ana Carolina Kropniczki de Azevedo', ' '])
-        t.insert([2, ' ', 'Edson Kropniczki', ' '])
-
-
 class LabelTable(tk.Frame):
 
     def __init__(self, parent, headers):
@@ -43,10 +29,4 @@ class LabelTable(tk.Frame):
     def cell_config(self, row, column, values):
         widget = self._cells[row][column]
         widget.configure(values)
-
-
-if __name__ == "__main__":
-    app = ExampleApp()
-    app.mainloop()
-
 
