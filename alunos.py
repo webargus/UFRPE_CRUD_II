@@ -153,12 +153,10 @@ class PainelAlunos:
 
     def _validar_aluno(self):
         erros = []
-        cpf = self.cpf.get().strip()
-        cpf = cpf.replace('.', '')
-        cpf = cpf.replace('-', '')
+        cpf = tools.CPF(self.cpf.get().strip())
         if len(cpf) == 0:
             erros.append("CPF em branco")
-        elif not tools.validar_cpf(cpf):
+        elif not cpf.valid():
             erros.append("CPF inválido")
         nome = self.nome.get().strip()
         if len(nome) == 0:
@@ -174,6 +172,8 @@ class PainelAlunos:
         query = "SELECT * FROM students ORDER BY name"
         students = Sqlite.db_conn.cursor.execute(query).fetchall()
         for row in students:
+            row = list(row)
+            row[1] = ~tools.CPF(row[1])
             self.tree.appendItem(row[1:], iid=row[0])
             # get ids of classes in which student is enrolled
             # REM: do left join just to make sure we retrieve classes sorted by semester in ascending order
@@ -205,7 +205,7 @@ class PainelAlunos:
         self._set_aluno((items[0]['text'], items[0]['values'][0]))
 
     def _set_aluno(self, tupla):
-        self.cpf.set(tupla[0])
+        self.cpf.set(~tools.CPF(tupla[0]))
         self.nome.set(tupla[1])
 
 

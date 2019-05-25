@@ -30,12 +30,12 @@ class Turmas:
         # add class code label + input
         Label(ftop, {"text": "Código:"}).grid({"row": 0, "column": 0})
         self.codigo = StringVar()
-        Entry(ftop, {"width": 4, "textvariable": self.codigo}).grid({"row": 0, "column": 1})
+        Entry(ftop, {"width": 5, "textvariable": self.codigo}).grid({"row": 0, "column": 1})
 
         # add class semester label + input
         Label(ftop, {"text": "Período:"}).grid({"row": 0, "column": 2})
         self.periodo = StringVar()
-        Entry(ftop, {"width": 5, "textvariable": self.periodo}).grid({"row": 0, "column": 3})
+        Entry(ftop, {"width": 6, "textvariable": self.periodo}).grid({"row": 0, "column": 3})
 
         # add class subject labels
         Label(ftop, {"text": "Disciplina:"}).grid({"row": 0, "column": 4})
@@ -53,7 +53,7 @@ class Turmas:
         self.listbox = ProfessorListbox(fprofs)
         self.listbox.grid({"row": 0, "column": 0, "sticky": EW})
 
-        # form new/ok/delete buttons
+        # form new/ok buttons
         config = {"text": "Novo",
                   "width": 70,
                   "image": tools.StaticImages.new16,

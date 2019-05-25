@@ -96,7 +96,7 @@ class PainelProfessores:
             if self.tree.parent(s['iid']):
                 continue
             param.append({'id': s['iid'],
-                          'cpf': s['text'],
+                          'cpf': tools.CPF(s['text']),
                           'nome': s['values'][0],
                           'depto': s['values'][1]
                           }
@@ -124,12 +124,10 @@ class PainelProfessores:
 
     def _validar_professor(self):
         erros = []
-        cpf = self.cpf.get().strip()
-        cpf = cpf.replace('.', '')
-        cpf = cpf.replace('-', '')
+        cpf = tools.CPF(self.cpf.get().strip())
         if len(cpf) == 0:
             erros.append("CPF em branco")
-        elif not tools.validar_cpf(cpf):
+        elif not cpf.valid():
             erros.append("CPF inválido")
         nome = self.nome.get().strip()
         if len(nome) == 0:
@@ -153,7 +151,9 @@ class PainelProfessores:
         Sqlite.db_conn.cursor.execute(query)
         profs = Sqlite.db_conn.cursor.fetchall()
         for row in profs:
+            row = list(row)
             # append professor to tree view
+            row[1] = ~tools.CPF(row[1])
             self.tree.appendItem(row[1:], iid=row[0])
             # query for professor classes from db
             Sqlite.db_conn.cursor.execute(query1.format(row[0]))
@@ -183,7 +183,7 @@ class PainelProfessores:
         self._set_professor((items[0]['text'], items[0]['values'][0], items[0]['values'][1]))
 
     def _set_professor(self, tupla):
-        self.cpf.set(tupla[0])
+        self.cpf.set(~tools.CPF(tupla[0]))
         self.nome.set(tupla[1])
         self.depto.set(tupla[2])
 

@@ -2,8 +2,6 @@ import re
 import tkinter
 from tkinter import messagebox
 
-cpf_pattern1 = r"^\d{11}$"              # expressões regulares para validar CPF
-# cpf_pattern2 = r"^(\d{3}\.){2}\d{3}-\d{2}$"
 disciplina_pattern = r"^\d{5}$"         # expressão regular para validar código de disciplina
 periodo_pattern = r"^\d{4}\.\d{1}$"     # expressão regular para validar período de turma
 
@@ -48,41 +46,32 @@ def validar_periodo(periodo):
     return True
 
 
-def validar_cpf(cpf):
-    #   Função para validar CPF; retorna True se CPF válido, False se não válido
-    if re.match(cpf_pattern1, cpf) is None:
-        return False
-    return True
+class CPF(str):
 
+    cpf_pattern = r"^\d{11}$"  # expressão regular para validar CPF
 
-def formatar_cpf(cpf):
-    #   retorna string de CPF no formato xxx.xxx.xxx-xx
-    ret = ''        # string acumuladora do CPF formatado
-    for x in range(0, 9, 3):        # acrescenta '.' a cada 3 algarismos
-        ret += cpf[x:x+3] + '.'
-    ret = ret[:-1]                  # descarta o último '.' acrescentado e
-    ret += '-' + cpf[-2:]           # substitui por um '-' seguido dos 2 últimos algarismos
-    return ret
+    def __new__(cls, *args, **kw):
+        args = list(args)
+        args[0] = args[0].replace('.', '')
+        args[0] = args[0].replace('-', '')
+        return str.__new__(cls, *args, **kw)
 
+    def __invert__(self):
+        if not self.valid():
+            return ''
+        #   retorna string de CPF no formato xxx.xxx.xxx-xx
+        ret = ''  # string acumuladora do CPF formatado
+        for x in range(0, 9, 3):  # acrescenta '.' a cada 3 algarismos
+            ret += self[x:x + 3] + '.'
+        ret = ret[:-1]  # descarta o último '.' acrescentado e
+        ret += '-' + self[-2:]  # substitui por um '-' seguido dos 2 últimos algarismos
+        return ret
 
-def desformatar_cpf(cpf):
-    ret = cpf.replace('.', '')
-    ret = ret.replace('-', '')
-    return ret
-
-
-class CPFStringVar(tkinter.StringVar):
-    def __init__(self):
-        super().__init__()
-
-    def set(self, v):
-        v = formatar_cpf(v)
-        super().set(v)
-
-    def get(self):
-        v = super().get()
-        v = desformatar_cpf(v)
-        return v
+    def valid(self):
+        #   Função para validar CPF; retorna True se CPF válido, False se não válido
+        if re.match(CPF.cpf_pattern, self) is None:
+            return False
+        return True
 
 
 def aviso_erro(erros):

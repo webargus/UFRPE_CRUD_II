@@ -66,6 +66,7 @@ class Ata(Toplevel):
         order = 1
         for student in Sqlite.db_conn.cursor.execute(query):
             student = list(student)
+            student[0] = ~tools.CPF(student[0])
             student.append(' ')
             student = [order, ' '] + student
             self.table.insert(student)
