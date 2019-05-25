@@ -24,26 +24,27 @@ class Ata(Toplevel):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        self.mainF = Frame(self)
-        self.mainF.grid({"row": 0, "column": 0, "sticky": NSEW, "pady": 2, "padx": 2})
-        self.mainF.grid_rowconfigure(0, weight=1)
-        self.mainF.grid_rowconfigure(1, weight=1)
-        self.mainF.grid_columnconfigure(0, weight=1)
+        mainF = Frame(self)
+        mainF.grid({"row": 0, "column": 0, "sticky": NSEW, "pady": 2, "padx": 2})
+        mainF.grid_rowconfigure(0, weight=1)
+        mainF.grid_rowconfigure(1, weight=1)
+        mainF.grid_columnconfigure(0, weight=1)
 
-        self.topF = Frame(self.mainF, padx=8, pady=8, borderwidth=1, relief='groove', background='white')
-        self.topF.grid({"row": 0, "column": 0, "sticky": NSEW})
-        self.topF.grid_rowconfigure(0, weight=1)
-        self.topF.grid_columnconfigure(0, weight=1)
-        self.topF.grid_columnconfigure(1, weight=1)
-        self.topLeftF = Frame(self.topF, background='white')
-        self.topLeftF.grid(row=0, column=0, sticky=NSEW)
-        HeaderLeft(self.topLeftF)
+        topF = Frame(mainF, padx=8, pady=8, borderwidth=1, relief='groove', background='white')
+        topF.grid({"row": 0, "column": 0, "sticky": NSEW})
+        topF.grid_rowconfigure(0, weight=1)
+        topF.grid_columnconfigure(0, weight=0)
+        topF.grid_columnconfigure(1, weight=1)
+        topLeftF = Frame(topF, background='white')
+        topLeftF.grid(row=0, column=0, sticky=NSEW)
+        HeaderLeft(topLeftF)
 
-        self.topRightF = Frame(self.topF)
-        self.topRightF.grid(row=0, column=1, sticky=NSEW)
-        Label(self.topRightF, text="Em construção").grid(row=0, column=0, sticky=NSEW)
+        topRightF = Frame(topF, bg='white')
+        topRightF.grid(row=0, column=1, sticky=NSEW)
+        topRightF.grid_columnconfigure(0, weight=1)
+        header_right = HeaderRight(topRightF)
 
-        bottomF = Frame(self.mainF, padx=8, pady=8)
+        bottomF = Frame(mainF, padx=8, pady=8)
         bottomF.grid({"row": 1, "column": 0, "sticky": NSEW})
         bottomF.grid_rowconfigure(0, weight=1)
         bottomF.grid_columnconfigure(0, weight=1)
@@ -55,6 +56,7 @@ class Ata(Toplevel):
         self.table = table.LabelTable(bottomF, headers)
         self.table.cell_config(0, 2, {"anchor": "center"})
 
+        header_right.preencher_turma(id_turma)
         self._listar_alunos(id_turma)
 
     def _listar_alunos(self, id_turma):
@@ -98,7 +100,83 @@ class HeaderLeft(Frame):
         Label(self, text=agora, background='white').grid(row=4, column=1)
 
 
+class HeaderRight(Frame):
 
+    def __init__(self, parent):
+        Frame.__init__(self, parent)
+        self.configure(background='white')
+        self.grid(row=0, column=0, sticky=NSEW)
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_columnconfigure(2, weight=1)
+        Label(self,
+              text='CÓDIGO DA DISCIPLINA',
+              font=('bold', 8),
+              anchor=W).grid(row=0, column=0, sticky=EW)
+        Label(self,
+              text='PERÍODO',
+              font=('bold', 8)).grid(row=0, column=1, sticky=EW)
+        Label(self,
+              text='TURMA',
+              font=('bold', 8)).grid(row=0, column=2, sticky=EW)
+        self.subjectcode = StringVar()
+        Label(self,
+              textvariable=self.subjectcode,
+              font=('bold', 8),
+              background='white',
+              bd=1,
+              relief=GROOVE).grid(row=1, column=0, sticky=EW)
+        self.period = StringVar()
+        Label(self,
+              textvariable=self.period,
+              font=('bold', 8),
+              background='white',
+              bd=1,
+              relief=GROOVE).grid(row=1, column=1, sticky=EW)
+        self.classcode = StringVar()
+        Label(self,
+              textvariable=self.classcode,
+              font=('bold', 8),
+              background='white',
+              bd=1,
+              relief=GROOVE).grid(row=1, column=2, sticky=EW)
+
+        Label(self,
+              text='NOME DA DISCIPLINA',
+              font=('bold', 8),
+              anchor=W).grid(row=2, column=0, columnspan=3, sticky=EW)
+        self.subjectname = StringVar()
+        Label(self,
+              textvariable=self.subjectname,
+              font=('bold', 8),
+              background='white',
+              bd=1,
+              relief=GROOVE).grid(row=3, column=0, columnspan=3, sticky=EW)
+
+        Label(self,
+              text='PROFESSOR(ES)',
+              font=('bold', 8),
+              anchor=W).grid(row=4, column=0, columnspan=3, sticky=EW)
+        self.profs = Listbox(self, height=3)
+        self.profs.grid(row=5, column=0, columnspan=3, sticky=EW)
+
+    def preencher_turma(self, id_turma):
+        # update GUI top right form with class infos
+        query = '''SELECT classes.code, classes.semester, subjects.code, subjects.name
+                   FROM classes LEFT JOIN subjects ON classes.subject = subjects.id
+                   WHERE classes.id = {}'''.format(id_turma)
+        Sqlite.db_conn.cursor.execute(query)
+        res = Sqlite.db_conn.cursor.fetchone()
+        self.classcode.set(res[0])
+        self.period.set(res[1])
+        self.subjectcode.set(res[2])
+        self.subjectname.set(res[3].upper())
+        # fill in top right listbox with profs
+        query = '''SELECT professors.name FROM class_professors
+                   LEFT JOIN professors ON class_professors.professor_id = professors.id
+                   WHERE class_professors.class_id = {} ORDER BY professors.name ASC'''.format(id_turma)
+        for res in Sqlite.db_conn.cursor.execute(query):
+            self.profs.insert(END, res[0].upper())
 
 
 
