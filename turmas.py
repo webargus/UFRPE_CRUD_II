@@ -291,7 +291,9 @@ class Turmas:
 
     def _gerar_ata(self):
         sel = self.tree.get_selection()
-        a = ata.Ata(self.parent.master)
+        if len(sel) == 0:
+            return
+        a = ata.Ata(self.parent.master, sel[0]['iid'])
         self.parent.wait_window(a)
 
 class ProfessorListbox(Listbox):
