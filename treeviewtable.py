@@ -1,3 +1,17 @@
+"""
+    *************************************************************************
+    *                                                                       *
+    *   Project CRUD II / Sistema de Controle Acadêmico Simplificado        *
+    *                                                                       *
+    *   Developer: Edson Kropniczki - BSI - 2019.1  - (c)2019               *
+    *                                                                       *
+    *   class TreeViewTable - inherits from tkinter Treeview                *
+    *                                                                       *
+    *   DISCLAIMER: Use it on your own risk!                                *
+    *                                                                       *
+    *************************************************************************
+"""
+
 
 from tkinter import *
 import tkinter.ttk as ttk

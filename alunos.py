@@ -86,9 +86,11 @@ class PainelAlunos:
     def _cancelar_matriculas(self):
         # get selected classes only
         sel = self.tree.get_selection()
-        # get ids for which there are no children == ids of classes,
-        # and delete them from tree view
-        sel = [x['iid'] for x in sel if len(self.tree.get_children(x['iid'])) == 0]
+        # get ids for which there are no children, but parents,
+        # and delete them from tree view (childless branches having a parent must be leaf branches)
+        sel = [x['iid'] for x in sel if len(self.tree.get_children(x['iid'])) == 0 and self.tree.parent(x['iid'])]
+        if len(sel) == 0:
+            return
         for id in sel:
             self.tree.delete(id)
         # wipe out childless branches from tree view
@@ -99,6 +101,7 @@ class PainelAlunos:
         # and split them into sublists where pos = 0 corresponds to student id and
         # pos = 1 corresponds to class id
         sel = [x.split('-') for x in sel]
+        # call turmas method to remove their class enrollments from DB
         self.turmas.remover_matriculas(sel)
 
     def _set_alunos_turma(self):
