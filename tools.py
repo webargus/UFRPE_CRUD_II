@@ -11,6 +11,7 @@ img_path = "C:\\Users\\Edson\\PycharmProjects\\UFRPE_CRUD_II\\img\\"
 icon32 = img_path + "brasao32.ico"
 tick16 = img_path+"tick.png"
 new16 = img_path + "plus16.png"
+shield = img_path + "brasao1.png"
 
 
 class StaticImages:
@@ -18,6 +19,7 @@ class StaticImages:
     def __init__(self):
         StaticImages.tick16 = tkinter.PhotoImage(file=tick16)
         StaticImages.new16 = tkinter.PhotoImage(file=new16)
+        StaticImages.shield = tkinter.PhotoImage(file=shield)
 
 
 def center_window(win):
