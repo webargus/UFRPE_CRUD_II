@@ -10,10 +10,10 @@ class TreeViewTable(ttk.Treeview):
         colwidths = list(headers.values())
         super(TreeViewTable, self).__init__(frame, columns=colnames[1:], selectmode='extended')
         self.grid({"row": 0, "column": 0, "sticky": NSEW})
-        #   acrescenta barras de rolagem
-        tree_scroll = ttk.Scrollbar(frame, orient=HORIZONTAL, command=self.xview)
-        tree_scroll.grid({"row": 1, "column": 0, "sticky": EW})
-        self.configure(xscrollcommand=tree_scroll.set)
+        #   acrescenta barra de rolagem
+        tree_scroll = ttk.Scrollbar(frame, orient=VERTICAL, command=self.yview)
+        tree_scroll.grid({"row": 0, "column": 1, "sticky": NS})
+        self.configure(yscrollcommand=tree_scroll.set)
         # insere cabeçalhos e define suas larguras
         for ix, header in enumerate(colnames):
             self.heading("#{}".format(ix), text=header)
