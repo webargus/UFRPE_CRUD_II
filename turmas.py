@@ -174,10 +174,11 @@ class Turmas:
         query = '''DELETE FROM class_professors WHERE class_id = {}'''.format(turma['id'])
         Sqlite.db_conn.cursor.execute(query)
         # prepare query to bind professors to class
-        query = '''INSERT INTO class_professors (class_id, professor_id) VALUES({}, ?)'''.format(turma['id'])
+        query = '''INSERT INTO class_professors (class_id, professor_id) VALUES({}, {})'''
+
         ids = self.listbox.get_prof_ids()
         for prof_id in ids:
-            Sqlite.db_conn.cursor.execute(query, prof_id)
+            Sqlite.db_conn.cursor.execute(query.format(turma['id'], prof_id))
         # commit db transaction
         Sqlite.db_conn.conn.commit()
         self._call_refresh_callbacks()
@@ -314,6 +315,7 @@ class ProfessorListbox(Listbox):
             self.popup_menu.grab_release()
 
     def append(self, params):
+        # print("params=", params)
         for prof in params:
             if self.find_prof(prof['id']) is None:
                 self.professors.append(prof)
@@ -349,7 +351,8 @@ class ProfessorListbox(Listbox):
         del self.professors[:]      # clear professors list
 
     def get_prof_ids(self):
-        return [iid for registry in self.professors for iid in registry['id']]
+        print("lb_profs=", self.professors)
+        return [iid['id'] for iid in self.professors]
 
 
 class DisciplinaLabel(Label):
