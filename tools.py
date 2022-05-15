@@ -5,11 +5,12 @@ from tkinter import messagebox
 disciplina_pattern = r"^\d{5}$"         # expressão regular para validar código de disciplina
 periodo_pattern = r"^\d{4}\.\d{1}$"     # expressão regular para validar período de turma
 
-img_path = "C:\\Users\\Edson\\PycharmProjects\\UFRPE_CRUD_II\\img\\"
+# img_path = "C:\\Users\\Edson\\PycharmProjects\\UFRPE_CRUD_II\\img\\"
+img_path = "/home/kropniczki/UFRPE/UFRPE_CRUD_II/img/"
 icon32 = img_path + "brasao32.ico"
 tick16 = img_path+"tick.png"
 new16 = img_path + "plus16.png"
-shield = img_path + "brasao1.png"
+shield = img_path + "brasao.png"
 
 
 class StaticImages:
